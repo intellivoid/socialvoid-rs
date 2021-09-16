@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"session",
+	"rawclient",
+	"jsonrpc2-client"
+]
