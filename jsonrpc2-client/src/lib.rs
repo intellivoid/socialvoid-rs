@@ -71,7 +71,7 @@ impl<T> RawResponse<T> {
         }
         Err(RpcError {
             code: -1,
-            message: format!("Neither result nor error was found. ID = {:?}", self.id),
+            message: Some(format!("Neither result nor error was found. ID = {:?}", self.id)),
             data: None,
         })
     }
@@ -92,15 +92,24 @@ mod tests {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RpcError {
     code: i32,
-    message: String,
+    message: Option<String>,
     data: Option<serde_json::Value>,
+}
+
+impl RpcError {
+    pub fn code(&self) -> i32 {
+        self.code
+    }
+    pub fn message(&self) -> &str {
+        self.message.as_ref().map_or("none", AsRef::as_ref)
+    } 
 }
 
 impl std::convert::From<reqwest::Error> for RpcError {
     fn from(error: reqwest::Error) -> Self {
         RpcError {
             code: -1,
-            message: format!("An error occurred: {}", error),
+            message: Some(format!("An error occurred: {}", error)),
             data: None,
         }
     }

@@ -9,12 +9,13 @@ type ErrorCode = i32;
 pub struct Error {
     kind: ErrorKind,
     code: ErrorCode,
-    description: Option<String>,
+    description: String,
 }
 
 #[derive(Debug)]
 pub enum ErrorKind {
     ValidationError(ValidationError),
+    JsonParsingError,
 }
 
 #[derive(Debug)]
@@ -27,7 +28,7 @@ impl From<RpcError> for Error {
     fn from(error: RpcError) -> Self {
         let code = error.code();
         let kind = get_error_kind(error.code());
-        let description = error.message();
+        let description = error.message().to_string();
         Self {
             code,
             kind,
@@ -36,8 +37,17 @@ impl From<RpcError> for Error {
     }
 }
 
+pub fn get_error_kind(code: ErrorCode) -> ErrorKind {
+    //FAKE.. TODO: this.
+    ErrorKind::ValidationError(ValidationError::InvalidUsername)
+}
+
 impl std::convert::From<serde_json::Error> for Error {
     fn from(_error: serde_json::Error) -> Self {
-        Self {}
+        Self {
+            code: -1, //TODO: maybe see standard error code for this?
+            kind: ErrorKind::JsonParsingError,
+            description: String::from("JSON Parsing error"), //TODO: make more descriptive if possible
+        }
     }
 }
