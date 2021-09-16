@@ -1,33 +1,16 @@
+pub mod errors;
+pub mod types;
+
 use jsonrpc2_client::RpcError;
 use std::convert::From;
 
-//TODO: IMPLEMENT THIS
-
-type ErrorCode = i32;
-
-#[derive(Debug)]
-pub struct Error {
-    kind: ErrorKind,
-    code: ErrorCode,
-    description: String,
-}
-
-#[derive(Debug)]
-pub enum ErrorKind {
-    ValidationError(ValidationError),
-    JsonParsingError,
-}
-
-#[derive(Debug)]
-enum ValidationError {
-    InvalidUsername,
-    InvalidPassword,
-}
+use types::Error;
+use types::ErrorKind;
 
 impl From<RpcError> for Error {
     fn from(error: RpcError) -> Self {
         let code = error.code();
-        let kind = get_error_kind(error.code());
+        let kind = ErrorKind::from(error.code());
         let description = error.message().to_string();
         Self {
             code,
@@ -35,11 +18,6 @@ impl From<RpcError> for Error {
             description,
         }
     }
-}
-
-pub fn get_error_kind(code: ErrorCode) -> ErrorKind {
-    //FAKE.. TODO: this.
-    ErrorKind::ValidationError(ValidationError::InvalidUsername)
 }
 
 impl std::convert::From<serde_json::Error> for Error {

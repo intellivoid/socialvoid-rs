@@ -3,7 +3,10 @@
 /// want to switch the JSONRPC client crate used in the future.
 mod error;
 
-pub use error::Error;
+#[macro_use]
+extern crate enum_primitive;
+
+pub use error::types::Error;
 
 const HOST: &str = "http://socialvoid.qlg1.com:5601/";
 
