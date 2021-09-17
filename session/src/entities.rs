@@ -2,13 +2,15 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
+use std::env;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SessionEstablished {
     id: String,
     challenge: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct ClientInfo {
     pub public_hash: String,
     pub private_hash: String,
@@ -22,8 +24,8 @@ impl ClientInfo {
     pub fn generate() -> ClientInfo {
         let public_hash = generate_random_hash();
         let private_hash = generate_random_hash();
-        let platform = String::from("Linux"); //TODO: auto detect platform?
-        let name = String::from("Social Void rust");
+        let platform = env::consts::OS.to_string(); //String::from("Linux"); //TODO: auto detect platform?
+        let name = String::from("Social Void Rust");
         let version = String::from("0.0.1"); //maybe have a better way to set this?
         ClientInfo {
             public_hash,
@@ -32,6 +34,17 @@ impl ClientInfo {
             name,
             version,
         }
+    }
+
+    pub fn save(&self, fpath: &str) -> Result<(), std::io::Error> {
+        serde_json::to_writer(&std::fs::File::create(&fpath)?, self)?;
+        Ok(())
+    }
+
+    pub fn load_from_file(fpath: &str) -> Result<ClientInfo, std::io::Error> {
+        let client_info: ClientInfo = serde_json::from_reader(&std::fs::File::open(fpath)?)?;
+
+        Ok(client_info)
     }
 }
 
