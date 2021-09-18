@@ -1,6 +1,7 @@
 [workspace]
 members = [
 	"session",
+	"client",
 	"rawclient",
 	"jsonrpc2-client"
 ]
