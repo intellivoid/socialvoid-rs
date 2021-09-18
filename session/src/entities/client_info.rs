@@ -1,14 +1,7 @@
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-
 use std::env;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SessionEstablished {
-    id: String,
-    challenge: String,
-}
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct ClientInfo {

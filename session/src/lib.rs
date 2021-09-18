@@ -1,13 +1,20 @@
 mod entities;
 
-use entities::ClientInfo;
-use entities::SessionEstablished;
+extern crate rawclient;
+
 use rawclient::Error;
 
-/// Creates a session and returns a session established object which contains a challenge
-pub async fn create(client: &rawclient::Client) -> Result<SessionEstablished, Error> {
-    let client_info = ClientInfo::generate();
-    client
+use entities::ClientInfo;
+use entities::SessionEstablished;
+
+/// Creates a session and returns a session established object which contains a challenge.
+/// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
+/// object using the `get_session` method to get the Session object.
+pub async fn create(
+    rpc_client: &rawclient::Client,
+    client_info: &ClientInfo,
+) -> Result<SessionEstablished, Error> {
+    rpc_client
         .send_request("session.create", serde_json::value::to_value(client_info)?)
         .await
 }
@@ -16,18 +23,9 @@ pub async fn create(client: &rawclient::Client) -> Result<SessionEstablished, Er
 mod tests {
     use super::*;
     #[tokio::test]
-    async fn it_should_establish_a_session() {
-        let client = rawclient::new();
-        let response = create(&client).await;
-        match response {
-            Ok(s_e) => {
-                println!("Result: {:?}", s_e);
-            }
-            Err(err) => {
-                println!("Error: {:?}", err);
-                unreachable!()
-            }
-        }
+    async fn it_should_establish_a_session() -> Result<(), Error> {
+        create(&rawclient::new(), &ClientInfo::generate()).await?;
+        Ok(())
     }
 
     #[test]
@@ -37,7 +35,6 @@ mod tests {
         client_info_generated.save(filename)?;
 
         let client_info_read = ClientInfo::load_from_file(filename)?;
-        println!("{:?}\n", client_info_read);
 
         assert_eq!(client_info_generated, client_info_read);
 
