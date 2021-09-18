@@ -5,6 +5,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SessionEstablished {
-    id: String,
-    challenge: String,
+    pub id: String,
+    pub challenge: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SessionIdentification {
+    session_id: String,
+    client_public_hash: String,
+    challenge_answer: String,
 }

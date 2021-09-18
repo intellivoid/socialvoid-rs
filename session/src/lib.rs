@@ -4,8 +4,8 @@ extern crate rawclient;
 
 use rawclient::Error;
 
-use entities::ClientInfo;
-use entities::SessionEstablished;
+pub use entities::ClientInfo;
+pub use entities::SessionEstablished;
 
 /// Creates a session and returns a session established object which contains a challenge.
 /// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
