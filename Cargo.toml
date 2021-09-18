@@ -2,6 +2,7 @@
 members = [
 	"session",
 	"client",
+	"help",
 	"rawclient",
 	"jsonrpc2-client"
 ]
