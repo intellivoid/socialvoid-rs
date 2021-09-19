@@ -10,6 +10,7 @@ use rawclient::Error;
 pub use entities::ClientInfo;
 pub use entities::Session;
 pub use entities::SessionEstablished;
+pub use entities::SessionHolder;
 pub use entities::SessionIdentification;
 
 /// `session.create`
