@@ -24,7 +24,7 @@ impl std::convert::From<serde_json::Error> for Error {
     fn from(_error: serde_json::Error) -> Self {
         Self {
             code: -1, //TODO: maybe see standard error code for this?
-            kind: ErrorKind::JsonParsingError,
+            kind: ErrorKind::JsonParsing,
             description: String::from("JSON Parsing error"), //TODO: make more descriptive if possible
         }
     }

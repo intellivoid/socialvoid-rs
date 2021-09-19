@@ -15,32 +15,32 @@ pub struct Error {
 
 #[derive(Debug)]
 pub enum ErrorKind {
-    ValidationError(ValidationError),
-    ServerError(ServerError),
-    RpcError(RpcError),
-    JsonParsingError,
-    UnknownError,
+    Validation(ValidationError),
+    Server(ServerError),
+    Rpc(RpcError),
+    JsonParsing,
+    Unknown,
 }
 
 impl From<ErrorCode> for ErrorKind {
     fn from(code: ErrorCode) -> Self {
-        if code >= -32768 && code <= -32000 {
+        if (-32768..=-32000).contains(&code) {
             match RpcError::from_i32(code) {
-                Some(kind) => Self::RpcError(kind),
-                None => Self::UnknownError,
+                Some(kind) => Self::Rpc(kind),
+                None => Self::Unknown,
             }
-        } else if code >= 8448 && code <= 8703 {
+        } else if (8448..=8703).contains(&code) {
             match ValidationError::from_i32(code) {
-                Some(kind) => Self::ValidationError(kind),
-                None => Self::UnknownError,
+                Some(kind) => Self::Validation(kind),
+                None => Self::Unknown,
             }
-        } else if code >= 16384 {
+        } else if (16384..).contains(&code) {
             match ServerError::from_i32(code) {
-                Some(kind) => Self::ServerError(kind),
-                None => Self::UnknownError,
+                Some(kind) => Self::Server(kind),
+                None => Self::Unknown,
             }
         } else {
-            Self::UnknownError
+            Self::Unknown
         }
     }
 }
