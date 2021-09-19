@@ -3,7 +3,7 @@ use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use std::env;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct ClientInfo {
     pub public_hash: String,
     pub private_hash: String,
