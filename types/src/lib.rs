@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A Peer Object that contains information about the peer
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Peer {
     id: String,
     #[serde(rename = "type")]
@@ -12,21 +12,21 @@ pub struct Peer {
     flags: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum PeerType {
     USER,
     BOT,
     PROXY,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DisplayPictureSize {
     width: u32,
     height: u32,
     document: Document,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Document {
     id: String,
     file_mime: String,
@@ -37,7 +37,7 @@ pub struct Document {
     created_timestamp: i32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum FileType {
     DOCUMENT,
     PHOTO,
