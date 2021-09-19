@@ -2,11 +2,17 @@ mod entities;
 
 extern crate rawclient;
 
+#[macro_use]
+extern crate serde_json;
+
 use rawclient::Error;
 
 pub use entities::ClientInfo;
+pub use entities::Session;
 pub use entities::SessionEstablished;
+pub use entities::SessionIdentification;
 
+/// `session.create`
 /// Creates a session and returns a session established object which contains a challenge.
 /// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
 /// object using the `get_session` method to get the Session object.

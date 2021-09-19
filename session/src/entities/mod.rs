@@ -1,17 +1,6 @@
 mod client_info;
+mod session;
 pub use client_info::ClientInfo;
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SessionEstablished {
-    pub id: String,
-    pub challenge: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SessionIdentification {
-    session_id: String,
-    client_public_hash: String,
-    challenge_answer: String,
-}
+pub use session::Session;
+pub use session::SessionEstablished;
+pub use session::SessionIdentification;
