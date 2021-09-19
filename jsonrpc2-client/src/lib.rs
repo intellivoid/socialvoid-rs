@@ -71,7 +71,10 @@ impl<T> RawResponse<T> {
         }
         Err(RpcError {
             code: -1,
-            message: Some(format!("Neither result nor error was found. ID = {:?}", self.id)),
+            message: Some(format!(
+                "Neither result nor error was found. ID = {:?}",
+                self.id
+            )),
             data: None,
         })
     }
@@ -102,7 +105,7 @@ impl RpcError {
     }
     pub fn message(&self) -> &str {
         self.message.as_ref().map_or("none", AsRef::as_ref)
-    } 
+    }
 }
 
 impl std::convert::From<reqwest::Error> for RpcError {

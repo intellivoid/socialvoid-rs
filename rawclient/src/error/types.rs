@@ -1,3 +1,4 @@
+use super::errors::AuthenticationError;
 use super::errors::RpcError;
 use super::errors::ServerError;
 use super::errors::ValidationError;
@@ -16,6 +17,7 @@ pub struct Error {
 #[derive(Debug)]
 pub enum ErrorKind {
     Validation(ValidationError),
+    Authentication(AuthenticationError),
     Server(ServerError),
     Rpc(RpcError),
     JsonParsing,
@@ -32,6 +34,11 @@ impl From<ErrorCode> for ErrorKind {
         } else if (8448..=8703).contains(&code) {
             match ValidationError::from_i32(code) {
                 Some(kind) => Self::Validation(kind),
+                None => Self::Unknown,
+            }
+        } else if (8704..=8979).contains(&code) {
+            match AuthenticationError::from_i32(code) {
+                Some(kind) => Self::Authentication(kind),
                 None => Self::Unknown,
             }
         } else if (16384..).contains(&code) {

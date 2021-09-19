@@ -40,3 +40,20 @@ enum_from_primitive! {
         DocumentUpload = 16385
     }
 }
+
+enum_from_primitive! {
+    #[derive(Debug)]
+    pub enum AuthenticationError {
+        IncorrectLoginCredentials = 8704,
+        IncorrectTwoFactorAuthenticationCode = 8705,
+        AuthenticationNotApplicable = 8706,
+        SessionNotFound = 8707,
+        NotAuthenticated = 8708,
+        PrivateAccessTokenRequired = 8709,
+        AuthenticationFailure = 8710,
+        BadSessionChallengeAnswer = 8711,
+        TwoFactorAuthenticationRequired = 8712,
+        AlreadyAuthenticated = 8713,
+        SessionExpired = 8714,
+    }
+}
