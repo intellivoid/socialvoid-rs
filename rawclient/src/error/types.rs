@@ -21,6 +21,7 @@ pub enum ErrorKind {
     Server(ServerError),
     Rpc(RpcError),
     JsonParsing,
+    ClientError,
     Unknown,
 }
 
