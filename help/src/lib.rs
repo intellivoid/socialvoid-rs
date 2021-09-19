@@ -1,5 +1,5 @@
 use rawclient::Error;
-use serde::{Deserialize, Serialize};
+use types::{HelpDocument, ServerInformation};
 
 #[macro_use]
 extern crate serde_json;
@@ -28,44 +28,6 @@ pub async fn get_terms_of_service(client: &rawclient::Client) -> Result<HelpDocu
     client
         .send_request("help.get_terms_of_service", json!(null))
         .await
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct HelpDocument {
-    id: String,
-    text: String,
-    entities: Vec<TextEntity>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TextEntity {
-    #[serde(rename = "type")]
-    entity_type: TextEntityType,
-    offset: u32,
-    length: u32,
-    value: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum TextEntityType {
-    BOLD,
-    ITALIC,
-    CODE,
-    STRIKE,
-    UNDERLINE,
-    URL,
-    MENTION,
-    HASHTAG,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ServerInformation {
-    network_name: String,
-    protocol_version: String,
-    cdn_server: String,
-    upload_max_file_size: u32,
-    unauthorized_session_ttl: u32,
-    authorized_session_ttl: u32,
 }
 
 #[cfg(test)]
