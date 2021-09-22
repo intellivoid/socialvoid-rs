@@ -1,3 +1,5 @@
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 pub struct Client {
@@ -26,10 +28,10 @@ impl Client {
             params: Some(params),
         };
 
-        // println!(
-        //     "Request: {}",
-        //     serde_json::to_string_pretty(&request).unwrap()
-        // );
+        println!(
+            "Request: {}",
+            serde_json::to_string_pretty(&request).unwrap()
+        );
 
         //TODO: maybe check the response better as well??
         let resp = self
@@ -81,7 +83,11 @@ impl<T> RawResponse<T> {
 }
 
 fn generate_id() -> String {
-    "1".to_string()
+    thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect()
 }
 
 #[cfg(test)]

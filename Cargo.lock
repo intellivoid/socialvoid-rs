@@ -407,6 +407,7 @@ dependencies = [
 name = "jsonrpc2-client"
 version = "0.1.0"
 dependencies = [
+ "rand 0.8.4",
  "reqwest",
  "serde",
  "serde_json",
