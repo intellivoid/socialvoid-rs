@@ -1,11 +1,11 @@
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
-
 mod entities;
+mod utils;
 
 use entities::RawRequest;
 use entities::RawResponse;
 pub use entities::RpcError;
+
+use utils::generate_id;
 
 pub struct Client {
     client: reqwest::Client,
@@ -85,14 +85,6 @@ impl<T> RawResponse<T> {
             data: None,
         })
     }
-}
-
-fn generate_id() -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(30)
-        .map(char::from)
-        .collect()
 }
 
 impl RpcError {
