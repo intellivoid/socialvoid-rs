@@ -1,6 +1,11 @@
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
-use serde::{Deserialize, Serialize};
+
+mod entities;
+
+use entities::RawRequest;
+use entities::RawResponse;
+pub use entities::RpcError;
 
 pub struct Client {
     client: reqwest::Client,
@@ -21,12 +26,7 @@ impl Client {
         method: &str,
         params: serde_json::Value,
     ) -> Result<T, RpcError> {
-        let request = RawRequest {
-            jsonrpc: "2.0".to_string(),
-            id: Some(generate_id()),
-            method: method.to_string(),
-            params: Some(params),
-        };
+        let request = RawRequest::new(Some(generate_id()), method.to_string(), Some(params));
 
         println!(
             "Request: {}",
@@ -45,22 +45,6 @@ impl Client {
 
         resp.result()
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct RawRequest {
-    jsonrpc: String,
-    id: Option<String>,
-    method: String,
-    params: Option<serde_json::Value>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct RawResponse<T> {
-    jsonrpc: String,
-    result: Option<T>,
-    error: Option<RpcError>,
-    id: String,
 }
 
 impl<T> RawResponse<T> {
@@ -88,21 +72,6 @@ fn generate_id() -> String {
         .take(30)
         .map(char::from)
         .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RpcError {
-    code: i32,
-    message: Option<String>,
-    data: Option<serde_json::Value>,
 }
 
 impl RpcError {
