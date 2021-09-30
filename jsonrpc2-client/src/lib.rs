@@ -45,6 +45,27 @@ impl Client {
 
         resp.result()
     }
+
+    pub async fn send_notification(
+        &self,
+        method: &str,
+        params: serde_json::Value,
+    ) -> Result<(), RpcError> {
+        let request = RawRequest::new(None, method.to_string(), Some(params));
+
+        println!(
+            "Request: {}",
+            serde_json::to_string_pretty(&request).unwrap()
+        );
+
+        self.client
+            .post(&self.host_url)
+            .json(&request)
+            .send()
+            .await?;
+
+        Ok(())
+    }
 }
 
 impl<T> RawResponse<T> {
