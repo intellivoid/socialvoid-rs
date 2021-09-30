@@ -31,21 +31,42 @@ fn totp(key: String) -> String {
 fn hotp(key: String, counter: u64, digits: u8) -> String {
     let key = base32::decode(
         base32::Alphabet::RFC4648 { padding: true },
-        &format!("{}{}", key.to_uppercase(), "=".repeat((8 - key.len()) % 8)),
+        &format!(
+            "{}{}",
+            key.to_uppercase(),
+            "=".repeat(((8 as i8 - key.len() as i8) % 8) as usize)
+        ),
     )
     .expect("Couldn't decode base32");
+
     let mut hmac = Hmac::new(sha1::Sha1::new(), &key);
     let mut msg = vec![];
     msg.write_u64::<BigEndian>(counter).unwrap();
     hmac.input(&msg);
-    let mut result = vec![];
-    hmac.raw_result(&mut result);
+    let result = hmac.result().code().to_vec();
     let offset = result.last().unwrap() & 0x0f;
     let mut rdr = Cursor::new(&result[offset as usize..(offset + 4) as usize]);
     let binary = rdr.read_u32::<BigEndian>().unwrap() & 0x7fffffff;
 
+    let binstr = binary.to_string();
+    let start_i = binstr.len() as i32 - 6;
+    let end_i = binstr.len() - 1;
+    if start_i > 0 {
+        return binstr[start_i as usize..=end_i as usize].to_string();
+    }
     //OTP =
-    binary
-        .to_string()
-        .pad(digits as usize, '0', Alignment::Right, true)
+    binstr[start_i as usize..=end_i as usize].pad(digits as usize, '0', Alignment::Right, true)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn it_should_get_the_correct_number_of_hotp_digits() {
+        let digits = 6;
+        let counter = 23;
+        let otp_string = hotp(String::from("ff"), counter, digits);
+        println!("{}", otp_string);
+        assert_eq!(otp_string.len(), 6);
+    }
 }
