@@ -12,6 +12,7 @@ pub struct Client {
     host_url: String,
 }
 
+///Creates a new client
 pub fn new(host: &str) -> Client {
     let client = reqwest::Client::new();
     Client {
@@ -21,6 +22,7 @@ pub fn new(host: &str) -> Client {
 }
 
 impl Client {
+    ///Send a request
     pub async fn send_request<T: serde::de::DeserializeOwned + std::fmt::Debug>(
         &self,
         method: &str,
@@ -46,6 +48,7 @@ impl Client {
         resp.result()
     }
 
+    /// Send a notification
     pub async fn send_notification(
         &self,
         method: &str,
@@ -88,19 +91,23 @@ impl<T> RawResponse<T> {
 }
 
 impl RpcError {
+    /// Get error code for the RPC Error
     pub fn code(&self) -> i32 {
         self.code
     }
+
+    //Returns the message in the error if it exists or returns `"none"`
     pub fn message(&self) -> &str {
         self.message.as_ref().map_or("none", AsRef::as_ref)
     }
 }
 
 impl std::convert::From<reqwest::Error> for RpcError {
+    /// Convert a Reqwest error to an RPC Error with code -1
     fn from(error: reqwest::Error) -> Self {
         RpcError {
             code: -1,
-            message: Some(format!("An error occurred: {}", error)),
+            message: Some(format!("Reqwest error: {}", error)),
             data: None,
         }
     }
