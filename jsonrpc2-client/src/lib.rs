@@ -1,6 +1,7 @@
 mod entities;
 mod utils;
 
+use entities::BatchRequestBuilder;
 use entities::RawRequest;
 use entities::RawResponse;
 pub use entities::RpcError;
@@ -19,6 +20,12 @@ pub fn new(host: &str) -> Client {
         client,
         host_url: host.to_string(),
     }
+}
+
+/// Creates a new BatchRequestBuilder object which can be used to build a batch request which
+/// may contain both requests and notifications(i.e. requests without an id)
+pub fn batch_request() -> BatchRequestBuilder {
+    BatchRequestBuilder::new()
 }
 
 impl Client {

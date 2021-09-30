@@ -1,5 +1,52 @@
 use serde::{Deserialize, Serialize};
 
+use crate::utils::generate_id;
+
+type RawBatchRequest = Vec<RawRequest>;
+pub type BatchResponse = Vec<serde_json::Value>;
+
+/// Used to build a batch request. This object is created using the `batch_request` function of the crate
+pub struct BatchRequestBuilder {
+    requests: RawBatchRequest,
+}
+
+impl BatchRequestBuilder {
+    pub fn new() -> BatchRequestBuilder {
+        BatchRequestBuilder { requests: vec![] }
+    }
+
+    /// Add a request to the batch request
+    pub fn add_request(
+        &mut self,
+        method: &str,
+        params: serde_json::Value,
+    ) -> &mut BatchRequestBuilder {
+        self.requests.push(RawRequest::new(
+            Some(generate_id()),
+            method.to_string(),
+            Some(params),
+        ));
+        self
+    }
+
+    // Add a new notification to the batch request
+    pub fn add_notification(
+        &mut self,
+        method: &str,
+        params: serde_json::Value,
+    ) -> &mut BatchRequestBuilder {
+        self.requests
+            .push(RawRequest::new(None, method.to_string(), Some(params)));
+        self
+    }
+
+    /// Send the batch request
+    /// TODO: mmm.. maybe find a way to add the RawResponse object here somehow???
+    pub fn send() -> Result<BatchResponse, Vec<RpcError>> {
+        unimplemented!()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawRequest {
     pub jsonrpc: String,
