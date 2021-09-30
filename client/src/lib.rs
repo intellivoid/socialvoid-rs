@@ -6,7 +6,7 @@ use session::SessionHolder;
 pub async fn new_with_defaults() -> Result<Client, Error> {
     let rpc_client = rawclient::new();
     let client_info = ClientInfo::generate();
-    let session = SessionHolder::new(client_info.clone());
+    let mut session = SessionHolder::new(client_info.clone());
     session.create(&rpc_client).await?;
     let sessions = vec![session];
 
@@ -61,7 +61,7 @@ impl Client {
 
     /// Tries to establish another session adds it to the client if successful and returns the key of the session
     pub async fn new_session(&mut self) -> Result<usize, Error> {
-        let session = SessionHolder::new(self.client_info.clone());
+        let mut session = SessionHolder::new(self.client_info.clone());
         session.create(&self.rpc_client).await?;
         self.sessions.push(session);
 

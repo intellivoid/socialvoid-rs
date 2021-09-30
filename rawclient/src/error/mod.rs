@@ -4,8 +4,8 @@ pub mod types;
 use jsonrpc2_client::RpcError;
 use std::convert::From;
 
-use types::Error;
-use types::ErrorKind;
+pub use types::Error;
+pub use types::ErrorKind;
 
 impl From<RpcError> for Error {
     fn from(error: RpcError) -> Self {

@@ -16,9 +16,14 @@ mod tests {
     use super::*;
     use rawclient::Error;
     #[tokio::test]
-    async fn it_should_establish_a_session() -> Result<(), Error> {
-        let session = SessionHolder::new(ClientInfo::generate());
-        session.create(&rawclient::new()).await?;
+    async fn it_should_establish_a_session_and_get_it() -> Result<(), Error> {
+        let mut session = SessionHolder::new(ClientInfo::generate());
+        let client = rawclient::new();
+        session.create(&client).await?;
+
+        let sesh = session.get(&client).await?;
+        println!("{:?}", sesh);
+        // assert_eq!(established.id, sesh.id);
         Ok(())
     }
 

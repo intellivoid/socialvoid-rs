@@ -6,7 +6,9 @@ mod error;
 #[macro_use]
 extern crate enum_primitive;
 
-pub use error::types::Error;
+pub use error::errors::AuthenticationError;
+pub use error::Error;
+pub use error::ErrorKind;
 
 const HOST: &str = "http://socialvoid.qlg1.com:5601/";
 

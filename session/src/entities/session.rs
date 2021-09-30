@@ -14,11 +14,11 @@ pub struct SessionIdentification {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
-    id: String,
-    flags: Vec<String>,
-    authenticated: bool,
-    created: i32,
-    expires: i32,
+    pub id: String,
+    pub flags: Vec<String>,
+    pub authenticated: bool,
+    pub created: i32,
+    pub expires: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -42,17 +42,17 @@ impl SessionHolder {
     }
 
     /// `session.create`
-    /// Creates a session and returns a session established object which contains a challenge.
+    /// Creates a session and sets a session established object which contains a challenge.
     /// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
     /// object using the `get_session` method to get the Session object.
-    pub async fn create(
-        &self,
-        rpc_client: &rawclient::Client,
-    ) -> Result<SessionEstablished, Error> {
+    pub async fn create(&mut self, rpc_client: &rawclient::Client) -> Result<(), Error> {
         let client_info = &self.client_info;
-        rpc_client
-            .send_request("session.create", serde_json::value::to_value(client_info)?)
-            .await
+        self.established = Some(
+            rpc_client
+                .send_request("session.create", serde_json::value::to_value(client_info)?)
+                .await?,
+        );
+        Ok(())
     }
 
     /// `session.get`
@@ -62,7 +62,7 @@ impl SessionHolder {
         rpc_client
             .send_request(
                 "session.get",
-                serde_json::value::to_value(session_identification)?,
+                json!({"session_identification": serde_json::value::to_value(session_identification)?}),
             )
             .await
     }
@@ -125,8 +125,7 @@ impl SessionHolder {
             .await
     }
 
-    //TODO: solve the challenge
-    fn session_identification(&self) -> Result<SessionIdentification, String> {
+    pub fn session_identification(&self) -> Result<SessionIdentification, String> {
         if self.established.is_none() {
             return Err(String::from("Session not established."));
         }
