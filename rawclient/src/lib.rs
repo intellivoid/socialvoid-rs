@@ -7,6 +7,7 @@ mod error;
 extern crate enum_primitive;
 
 pub use error::errors::AuthenticationError;
+pub use error::errors::ClientError;
 pub use error::Error;
 pub use error::ErrorKind;
 

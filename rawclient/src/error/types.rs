@@ -1,4 +1,5 @@
 use super::errors::AuthenticationError;
+use super::errors::ClientError;
 use super::errors::RpcError;
 use super::errors::ServerError;
 use super::errors::ValidationError;
@@ -21,8 +22,18 @@ pub enum ErrorKind {
     Server(ServerError),
     Rpc(RpcError),
     JsonParsing,
-    ClientError,
+    Client(ClientError),
     Unknown,
+}
+
+impl Error {
+    pub fn new_client_error(error_type: ClientError) -> Self {
+        Self {
+            kind: ErrorKind::Client(error_type),
+            code: -1,
+            description: String::from("There was an error on the client"), // TODO: maybe have description based on error type
+        }
+    }
 }
 
 impl From<ErrorCode> for ErrorKind {

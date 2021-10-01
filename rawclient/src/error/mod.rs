@@ -20,16 +20,6 @@ impl From<RpcError> for Error {
     }
 }
 
-impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Self {
-            code: -2,
-            kind: ErrorKind::ClientError,
-            description: error,
-        }
-    }
-}
-
 impl std::convert::From<serde_json::Error> for Error {
     fn from(_error: serde_json::Error) -> Self {
         Self {

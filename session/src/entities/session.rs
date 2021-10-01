@@ -1,4 +1,5 @@
 use super::ClientInfo;
+use rawclient::ClientError;
 use rawclient::Error;
 use serde::{Deserialize, Serialize};
 use types::Peer;
@@ -29,7 +30,7 @@ pub struct SessionEstablished {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SessionHolder {
-    established: Option<SessionEstablished>,
+    pub established: Option<SessionEstablished>,
     client_info: ClientInfo,
 }
 
@@ -125,9 +126,9 @@ impl SessionHolder {
             .await
     }
 
-    pub fn session_identification(&self) -> Result<SessionIdentification, String> {
+    pub fn session_identification(&self) -> Result<SessionIdentification, Error> {
         if self.established.is_none() {
-            return Err(String::from("Session not established."));
+            return Err(Error::new_client_error(ClientError::SessionNotEstablished));
         }
         let session_id = self
             .established

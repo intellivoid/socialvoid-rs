@@ -57,3 +57,9 @@ enum_from_primitive! {
         SessionExpired = 8714,
     }
 }
+
+#[derive(Debug)]
+pub enum ClientError {
+    TermsOfServiceNotAgreed,
+    SessionNotEstablished,
+}
