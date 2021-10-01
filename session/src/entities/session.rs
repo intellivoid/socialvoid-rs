@@ -2,6 +2,7 @@ use super::ClientInfo;
 use rawclient::ClientError;
 use rawclient::Error;
 use serde::{Deserialize, Serialize};
+pub use types::HelpDocument;
 use types::Peer;
 
 use super::session_challenge::answer_challenge;
@@ -129,6 +130,14 @@ impl SessionHolder {
         rpc_client
             .send_request("session.register", serde_json::to_value(request)?)
             .await
+    }
+
+    /// Accepts the terms of service
+    /// The client must explicitly call `session.accept_terms_of_service(terms_of_service)` to
+    /// accept the terms of service. The HelpDocument can be acquired via `help::get_terms_of_service(rawclient)`
+    pub async fn accept_terms_of_service(&mut self, tos: HelpDocument) -> Result<(), Error> {
+        self.tos_read = Some(tos.id);
+        Ok(())
     }
 
     pub fn session_identification(&self) -> Result<SessionIdentification, Error> {

@@ -45,9 +45,10 @@ pub enum FileType {
     AUDIO,
 }
 
+/// HelpDocument -> https://github.com/intellivoid/Socialvoid-Standard-Documentation/blob/master/Objects/HelpDocument.md
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HelpDocument {
-    id: String,
+    pub id: String,
     text: String,
     entities: Vec<TextEntity>,
 }
