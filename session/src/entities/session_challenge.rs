@@ -69,4 +69,39 @@ mod tests {
         println!("{}", otp_string);
         assert_eq!(otp_string.len(), 6);
     }
+
+    #[tokio::test]
+    async fn it_should_calculate_the_correct_answer() {
+        //This test creates a session and calculates the challenge answer
+        // using the python script in the standard and the current implementation and
+        // compares both
+        use crate::ClientInfo;
+        use crate::SessionHolder;
+        use std::process::Command;
+
+        let client_info = ClientInfo::generate();
+        let private_hash = client_info.private_hash.clone();
+        let mut session = SessionHolder::new(client_info);
+        let client = rawclient::new();
+        session
+            .create(&client)
+            .await
+            .expect("Couldn't create the session");
+        let established = session.established.unwrap();
+        let challenge_answer =
+            answer_challenge(private_hash.clone(), established.challenge.clone());
+
+        let output = Command::new("python3")
+            .arg("test-hotp.py")
+            .arg(&private_hash)
+            .arg(&established.challenge)
+            .output()
+            .expect("Couldn't run python script");
+        println!(
+            "output: {}, err: {}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&output.stdout), challenge_answer);
+    }
 }
