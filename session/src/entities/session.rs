@@ -32,6 +32,7 @@ pub struct SessionEstablished {
 pub struct SessionHolder {
     pub established: Option<SessionEstablished>,
     client_info: ClientInfo,
+    tos_read: Option<String>, //Holds the terms of service ID
 }
 
 impl SessionHolder {
@@ -39,6 +40,7 @@ impl SessionHolder {
         SessionHolder {
             established: None,
             client_info,
+            tos_read: None,
         }
     }
 
@@ -106,15 +108,18 @@ impl SessionHolder {
     /// session.register
     /// Registers a new user to the network
     pub async fn register(
-        &self,
+        &mut self,
         request: RegisterRequest,
         rpc_client: &rawclient::Client,
     ) -> Result<Peer, Error> {
         let session_identification = self.session_identification()?;
+
         let request = SessionRegisterInput {
             session_identification,
-            terms_of_service_id: request.terms_of_service_id,
-            terms_of_service_agree: request.terms_of_service_agree,
+            terms_of_service_id: self.tos_read.take().ok_or(Error::new_client_error(
+                ClientError::TermsOfServiceNotAgreed,
+            ))?,
+            terms_of_service_agree: true,
             username: request.username,
             password: request.password,
             first_name: request.first_name,
@@ -163,8 +168,6 @@ struct SessionRegisterInput {
 }
 
 pub struct RegisterRequest {
-    pub terms_of_service_agree: bool,
-    pub terms_of_service_id: String,
     pub username: String,
     pub password: String,
     pub first_name: String,

@@ -14,7 +14,8 @@ pub use entities::SessionIdentification;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rawclient::Error;
+    use entities::RegisterRequest;
+    use rawclient::{ClientError, Error, ErrorKind};
     #[tokio::test]
     async fn it_should_establish_a_session_and_get_it() -> Result<(), Error> {
         let mut session = SessionHolder::new(ClientInfo::generate());
@@ -37,6 +38,35 @@ mod tests {
 
         assert_eq!(client_info_generated, client_info_read);
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn it_should_throw_a_terms_of_service_not_agreed_error() -> Result<(), Error> {
+        let mut session = SessionHolder::new(ClientInfo::generate());
+        let client = rawclient::new();
+        session.create(&client).await?;
+        let response = session
+            .register(
+                RegisterRequest {
+                    first_name: "Light".to_string(),
+                    last_name: None,
+                    username: "justanotherlight".to_string(),
+                    password: "SuperStrongPassword".to_string(),
+                },
+                &client,
+            )
+            .await;
+        match response {
+            Err(e) => match e.kind {
+                ErrorKind::Client(e) => match e {
+                    ClientError::TermsOfServiceNotAgreed => {}
+                    _ => unreachable!(),
+                },
+                _ => unreachable!(),
+            },
+            _ => unreachable!(),
+        }
         Ok(())
     }
 }
