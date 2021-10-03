@@ -3,14 +3,15 @@ use session::SessionIdentification;
 use types::Peer;
 
 pub async fn get_me(
-    _client: &rawclient::Client,
-    _session_identification: SessionIdentification,
+    client: &rawclient::Client,
+    session_identification: SessionIdentification,
 ) -> Result<Peer, Error> {
-    Err(Error {
-        code: 8707,
-        kind: ErrorKind::Authentication(AuthenticationError::SessionNotFound),
-        description: "Raised when the requested session was not found in the network".to_string(),
-    })
+    client
+        .send_request(
+            "network.get_me",
+            serde_json::to_value(session_identification)?,
+        )
+        .await
 }
 
 #[cfg(test)]

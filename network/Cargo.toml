@@ -10,3 +10,4 @@ rawclient = {path = "../rawclient"}
 session = {path = "../session"}
 types = {path = "../types"}
 tokio = {version = "1.11.0", features = ["full"]}
+serde_json = "1.0.67"
