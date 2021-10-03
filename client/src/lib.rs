@@ -1,6 +1,9 @@
 use rawclient::Error;
 use session::ClientInfo;
+use session::RegisterRequest;
 use session::SessionHolder;
+use types::HelpDocument;
+use types::Peer;
 
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, Error> {
@@ -46,8 +49,8 @@ pub struct Client {
 
 impl Client {
     /// Saves all your sessions to a file
-    pub fn save_sessions(&self) -> Result<(), std::io::Error> {
-        let filename = "social-void-rust.sessions";
+    pub fn save_sessions(&self, filename: &str) -> Result<(), std::io::Error> {
+        // let filename = "social-void-rust.sessions";
         serde_json::to_writer(&std::fs::File::create(filename)?, &self.sessions)?;
         Ok(())
     }
@@ -67,10 +70,95 @@ impl Client {
 
         Ok(self.sessions.len() - 1)
     }
+
+    /// Get terms of service
+    pub async fn get_terms_of_service(&self) -> Result<HelpDocument, Error> {
+        help::get_terms_of_service(&self.rpc_client).await
+    }
+
+    /// Accept terms of service for a specific session
+    pub fn accept_tos(&mut self, session_key: usize, tos: HelpDocument) {
+        self.sessions[session_key].accept_terms_of_service(tos);
+    }
+
+    /// Register an account using a specific session
+    pub async fn register(
+        &mut self,
+        session_key: usize,
+        req: RegisterRequest,
+    ) -> Result<Peer, Error> {
+        self.sessions[session_key]
+            .register(req, &self.rpc_client)
+            .await
+    }
+
+    /// Login to an account using a specific session
+    pub async fn authenticate_user(
+        &self,
+        session_key: usize,
+        username: String,
+        password: String,
+        otp: Option<String>,
+    ) -> Result<bool, Error> {
+        self.sessions[session_key]
+            .authenticate_user(&self.rpc_client, username, password, otp)
+            .await
+    }
+
+    /// Log out from a session. Maybe destroy the session??
+    pub async fn logout(&self, session_key: usize) -> Result<bool, Error> {
+        self.sessions[session_key].logout(&self.rpc_client).await
+    }
+
+    pub async fn get_me(&self, session_key: usize) -> Result<Peer, Error> {
+        network::get_me(
+            &self.rpc_client,
+            self.sessions[session_key].session_identification()?,
+        )
+        .await
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
     fn it_should_get_a_session() {}
+
+    #[tokio::test]
+    async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), Error> {
+        let sessions_file = "sessions.test";
+
+        let creds: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())?;
+
+        let mut client = new_empty_client();
+        match client.load_sessions(sessions_file) {
+            Err(_) => {
+                client.new_session().await?;
+
+                client
+                    .authenticate_user(
+                        0,
+                        creds["username"].as_str().unwrap().to_string(),
+                        creds["password"].as_str().unwrap().to_string(),
+                        None,
+                    )
+                    .await?;
+                client.save_sessions(sessions_file).unwrap();
+            }
+            _ => {}
+        }
+
+        let peer = client.get_me(0).await?;
+        client.logout(0).await?;
+
+        println!("{:?}", peer);
+        assert_eq!(
+            peer.username,
+            creds["username"].as_str().unwrap().to_string()
+        );
+
+        Ok(())
+    }
 }
