@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 /// A Peer Object that contains information about the peer
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Peer {
-    id: String,
+    pub id: String,
     #[serde(rename = "type")]
-    peer_type: PeerType,
-    name: String,
-    username: String,
-    display_picture_sizes: Vec<DisplayPictureSize>,
-    flags: Vec<String>,
+    pub peer_type: PeerType,
+    pub name: String,
+    pub username: String,
+    pub display_picture_sizes: Vec<DisplayPictureSize>,
+    pub flags: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
