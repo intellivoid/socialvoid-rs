@@ -135,9 +135,8 @@ impl SessionHolder {
     /// Accepts the terms of service
     /// The client must explicitly call `session.accept_terms_of_service(terms_of_service)` to
     /// accept the terms of service. The HelpDocument can be acquired via `help::get_terms_of_service(rawclient)`
-    pub async fn accept_terms_of_service(&mut self, tos: HelpDocument) -> Result<(), Error> {
+    pub fn accept_terms_of_service(&mut self, tos: HelpDocument) {
         self.tos_read = Some(tos.id);
-        Ok(())
     }
 
     pub fn session_identification(&self) -> Result<SessionIdentification, Error> {

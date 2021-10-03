@@ -6,6 +6,7 @@ extern crate rawclient;
 extern crate serde_json;
 
 pub use entities::ClientInfo;
+pub use entities::RegisterRequest;
 pub use entities::Session;
 pub use entities::SessionEstablished;
 pub use entities::SessionHolder;
