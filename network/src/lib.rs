@@ -1,4 +1,5 @@
-use rawclient::{AuthenticationError, Error, ErrorKind};
+use rawclient::Error;
+use serde_json::json;
 use session::SessionIdentification;
 use types::Peer;
 
@@ -9,7 +10,9 @@ pub async fn get_me(
     client
         .send_request(
             "network.get_me",
-            serde_json::to_value(session_identification)?,
+            json!({
+                "session_identification": serde_json::to_value(session_identification)?
+            }),
         )
         .await
 }
@@ -17,6 +20,7 @@ pub async fn get_me(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rawclient::{AuthenticationError, ErrorKind};
     use session::{ClientInfo, SessionHolder};
     #[tokio::test]
     async fn it_should_return_a_session_not_found_error_if_session_unauthenticated() {
