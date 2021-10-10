@@ -5,6 +5,10 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "socialvoid-cli"
+path = "src/main.rs"
+
 [dependencies]
 "client" = { path = "../client" }
 "rawclient" = { path = "../rawclient" }
