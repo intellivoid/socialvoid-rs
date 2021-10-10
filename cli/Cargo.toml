@@ -7,8 +7,10 @@ edition = "2018"
 
 [dependencies]
 "client" = { path = "../client" }
+"rawclient" = { path = "../rawclient" }
 structopt = "0.3.23"
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0.67"
 shellexpand = "2.1.0"
 tokio = {version = "1.11.0", features = ["full"]}
+rpassword = "5.0.1"
