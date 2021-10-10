@@ -32,6 +32,7 @@ pub struct SessionEstablished {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SessionHolder {
     pub established: Option<SessionEstablished>,
+    authenticated: bool,
     client_info: ClientInfo,
     tos_read: Option<String>, //Holds the terms of service ID
 }
@@ -42,6 +43,7 @@ impl SessionHolder {
             established: None,
             client_info,
             tos_read: None,
+            authenticated: false,
         }
     }
 
@@ -61,27 +63,29 @@ impl SessionHolder {
 
     /// `session.get`
     /// Returns a `Session`
-    pub async fn get(&self, rpc_client: &rawclient::Client) -> Result<Session, Error> {
+    pub async fn get(&mut self, rpc_client: &rawclient::Client) -> Result<Session, Error> {
         let session_identification = self.session_identification()?;
-        rpc_client
+        let sesh: Session = rpc_client
             .send_request(
                 "session.get",
                 json!({"session_identification": serde_json::value::to_value(session_identification)?}),
             )
-            .await
+            .await?;
+        self.authenticated = sesh.authenticated;
+        Ok(sesh)
     }
 
     /// `session.authenticate_user`
     /// Authenticates a user via a username & password and optionally an OTP - extends session expiration time
     pub async fn authenticate_user(
-        &self,
+        &mut self,
         rpc_client: &rawclient::Client,
         username: String,
         password: String,
         otp: Option<String>,
     ) -> Result<bool, Error> {
         let session_identification = self.session_identification()?;
-        rpc_client
+        let response = rpc_client
             .send_request(
                 "session.authenticate_user",
                 json!({
@@ -91,19 +95,23 @@ impl SessionHolder {
                     "otp": otp
                 }),
             )
-            .await
+            .await?;
+        self.authenticated = true;
+        Ok(response)
     }
 
     /// `session.logout`
     /// Log out without destroying the session - changes the session expiration date too
-    pub async fn logout(&self, rpc_client: &rawclient::Client) -> Result<bool, Error> {
+    pub async fn logout(&mut self, rpc_client: &rawclient::Client) -> Result<bool, Error> {
         let session_identification = self.session_identification()?;
-        rpc_client
+        let response = rpc_client
             .send_request(
                 "session.logout",
                 serde_json::value::to_value(session_identification)?,
             )
-            .await
+            .await?;
+        self.authenticated = false;
+        Ok(response)
     }
 
     /// session.register
@@ -161,6 +169,10 @@ impl SessionHolder {
             client_public_hash,
             challenge_answer: answer_challenge(self.client_info.private_hash.clone(), challenge),
         })
+    }
+
+    pub fn authenticated(&self) -> bool {
+        self.authenticated
     }
 }
 

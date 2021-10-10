@@ -94,7 +94,7 @@ impl Client {
 
     /// Login to an account using a specific session
     pub async fn authenticate_user(
-        &self,
+        &mut self,
         session_key: usize,
         username: String,
         password: String,
@@ -105,8 +105,13 @@ impl Client {
             .await
     }
 
+    /// Check if a session is authenticated
+    pub fn is_authenticated(&self, session_key: usize) -> bool {
+        self.sessions[session_key].authenticated()
+    }
+
     /// Log out from a session. Maybe destroy the session??
-    pub async fn logout(&self, session_key: usize) -> Result<bool, Error> {
+    pub async fn logout(&mut self, session_key: usize) -> Result<bool, Error> {
         self.sessions[session_key].logout(&self.rpc_client).await
     }
 
