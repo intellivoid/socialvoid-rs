@@ -49,8 +49,24 @@ pub enum FileType {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HelpDocument {
     pub id: String,
-    text: String,
-    entities: Vec<TextEntity>,
+    pub text: String,
+    pub entities: Vec<TextEntity>,
+}
+
+impl HelpDocument {
+    pub fn get_plain_text(&self) -> String {
+        self.text.clone()
+    }
+
+    pub fn get_markdown(&self) -> String {
+        //TODO: implement this
+        unimplemented!()
+    }
+
+    pub fn get_html(&self) -> String {
+        //TODO: implement this
+        unimplemented!()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
