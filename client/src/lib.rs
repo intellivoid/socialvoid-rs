@@ -72,6 +72,11 @@ impl Client {
         Ok(self.sessions.len() - 1)
     }
 
+    /// Removes a session and returns it
+    pub async fn delete_session(&mut self, session_key: usize) -> SessionHolder {
+        self.sessions.remove(session_key)
+    }
+
     /// Gets a Session object for a specific session
     pub async fn get_session(&mut self, session_key: usize) -> Result<Session, Error> {
         self.sessions[session_key].get(&self.rpc_client).await
