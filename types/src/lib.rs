@@ -8,7 +8,6 @@ pub struct Peer {
     pub peer_type: PeerType,
     pub name: String,
     pub username: String,
-    pub display_picture_sizes: Vec<DisplayPictureSize>,
     pub flags: Vec<String>,
 }
 
