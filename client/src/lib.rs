@@ -1,6 +1,7 @@
 use rawclient::Error;
 use session::ClientInfo;
 use session::RegisterRequest;
+use session::Session;
 use session::SessionHolder;
 use types::HelpDocument;
 use types::Peer;
@@ -69,6 +70,11 @@ impl Client {
         self.sessions.push(session);
 
         Ok(self.sessions.len() - 1)
+    }
+
+    /// Gets a Session object for a specific session
+    pub async fn get_session(&mut self, session_key: usize) -> Result<Session, Error> {
+        self.sessions[session_key].get(&self.rpc_client).await
     }
 
     /// Get terms of service
