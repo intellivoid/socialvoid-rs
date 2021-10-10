@@ -1,4 +1,5 @@
 use client as sv_client;
+use session::RegisterRequest;
 use structopt::StructOpt;
 
 mod utils;
@@ -41,6 +42,61 @@ async fn main() {
                 }
             }
         }
+        Cli::Register => {
+            setup_sessions(&config, &mut sv, &mut current_session).await;
+            if sv.is_authenticated(current_session) {
+                current_session = sv
+                    .new_session()
+                    .await
+                    .expect("Couldn't create a new session");
+            }
+            let first_name = prompt_stdin("First name: ");
+            let last_name = {
+                let last_name = prompt_stdin("Last name(optional): ");
+                if last_name.len() == 0 {
+                    None
+                } else {
+                    Some(last_name)
+                }
+            };
+            //TODO: don't login if already logged in for a username???
+            let username = prompt_stdin("New username: ");
+            let password = prompt_password("Enter password: ");
+            //TODO: validation and Maybe password strength check or sth ^^
+            let tos = sv
+                .get_terms_of_service()
+                .await
+                .expect("Couldn't get the terms of service.");
+            println!("{}", tos.get_plain_text());
+            let accept_tos =
+                prompt_stdin("Have you read these terms of service and accept them?[y/N] ")
+                    .chars()
+                    .next();
+            if let Some(accept_tos) = accept_tos {
+                if accept_tos == 'y' || accept_tos == 'Y' {
+                    sv.accept_tos(current_session, tos);
+                    match sv
+                        .register(
+                            current_session,
+                            RegisterRequest {
+                                username,
+                                password,
+                                first_name,
+                                last_name,
+                            },
+                        )
+                        .await
+                    {
+                        Ok(peer) => println!("Registered.\n{:?}", peer),
+                        Err(err) => println!("Couldn't register.\n{:?}", err),
+                    }
+                } else {
+                    println!("You need to accept the terms of service to register to SocialVoid");
+                }
+            } else {
+                println!("You need to accept the terms of service to register to SocialVoid");
+            }
+        }
         Cli::Config { .. } => {}
         Cli::GetMe => {
             setup_sessions(&config, &mut sv, &mut current_session).await;
@@ -61,6 +117,7 @@ async fn main() {
 #[derive(Debug, StructOpt)]
 enum Cli {
     Login { username: Option<String> },
+    Register,
     Config { server: Option<usize> },
     GetMe,
     Sync {},
