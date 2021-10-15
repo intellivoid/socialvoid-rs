@@ -47,6 +47,12 @@ impl BatchRequestBuilder {
     }
 }
 
+impl Default for BatchRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawRequest {
     pub jsonrpc: String,
