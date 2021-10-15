@@ -120,9 +120,10 @@ impl SessionHolder {
 
         let request = SessionRegisterInput {
             session_identification,
-            terms_of_service_id: self.tos_read.take().ok_or(Error::new_client_error(
-                ClientError::TermsOfServiceNotAgreed,
-            ))?,
+            terms_of_service_id: self
+                .tos_read
+                .take()
+                .ok_or_else(|| Error::new_client_error(ClientError::TermsOfServiceNotAgreed))?,
             terms_of_service_agree: true,
             username: request.username,
             password: request.password,

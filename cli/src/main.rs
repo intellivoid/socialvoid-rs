@@ -11,7 +11,7 @@ async fn main() {
     let config = load_config();
     let mut sv = sv_client::new_empty_client();
     let mut current_session: usize = std::env::var("SV_CURRENT_SESSION")
-        .unwrap_or("0".to_string())
+        .unwrap_or_else(|_| "0".to_string())
         .parse()
         .expect("The environment variable should SV_CURRENT_SESSION should contain an integer >=0");
 

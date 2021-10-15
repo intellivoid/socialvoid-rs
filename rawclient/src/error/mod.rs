@@ -64,7 +64,7 @@ impl<T> std::convert::TryFrom<&CdnResponse<T>> for Error {
         }
         Ok(Self {
             code: resp.error_code.unwrap_or(0),
-            kind: ErrorKind::Cdn(resp.message.clone().unwrap_or("".to_string())),
+            kind: ErrorKind::Cdn(resp.message.clone().unwrap_or_else(|| "".to_string())),
             description: String::from("CDN error occurred"), //TODO: make more descriptive if possible
         })
     }
