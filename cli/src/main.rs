@@ -53,7 +53,7 @@ async fn main() {
             let first_name = prompt_stdin("First name: ");
             let last_name = {
                 let last_name = prompt_stdin("Last name(optional): ");
-                if last_name.len() == 0 {
+                if last_name.is_empty() {
                     None
                 } else {
                     Some(last_name)

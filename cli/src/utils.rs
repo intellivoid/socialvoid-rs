@@ -67,7 +67,7 @@ pub fn load_config() -> Config {
         },
         Err(_err) => Config {
             sessions_file: format!("{}/sessions", base_path),
-            base_path: base_path,
+            base_path,
             config_path,
             current_session: 0,
         },
@@ -98,6 +98,5 @@ pub fn prompt_stdin(prompt: &str) -> String {
 pub fn prompt_password(prompt: &str) -> String {
     print!("{}", prompt);
     std::io::stdout().flush().unwrap();
-    let password = read_password().expect("Couldn't read the password");
-    password
+    read_password().expect("Couldn't read the password")
 }

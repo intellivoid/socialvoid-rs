@@ -34,7 +34,7 @@ fn hotp(key: String, counter: u64, digits: u8) -> String {
         &format!(
             "{}{}",
             key.to_uppercase(),
-            "=".repeat(((8 as i8 - key.len() as i8) % 8) as usize)
+            "=".repeat(((8_i8 - key.len() as i8) % 8) as usize)
         ),
     )
     .expect("Couldn't decode base32");
