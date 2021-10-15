@@ -21,7 +21,10 @@ pub enum ErrorKind {
     Authentication(AuthenticationError),
     Server(ServerError),
     Rpc(RpcError),
+    Cdn(String),
     JsonParsing,
+    RequestError(reqwest::Error),
+    IO(std::io::Error),
     Client(ClientError),
     Unknown,
 }

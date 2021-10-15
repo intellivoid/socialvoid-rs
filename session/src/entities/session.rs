@@ -2,17 +2,12 @@ use super::ClientInfo;
 use rawclient::ClientError;
 use rawclient::Error;
 use serde::{Deserialize, Serialize};
+use types::Document;
 pub use types::HelpDocument;
 use types::Peer;
+use types::SessionIdentification;
 
 use super::session_challenge::answer_challenge;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SessionIdentification {
-    session_id: String,
-    client_public_hash: String,
-    challenge_answer: String,
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
@@ -137,6 +132,30 @@ impl SessionHolder {
 
         rpc_client
             .send_request("session.register", serde_json::to_value(request)?)
+            .await
+    }
+
+    /// Upload a file to the CDN
+    pub async fn upload_file(
+        &self,
+        file: &str,
+        cdn_client: &rawclient::CdnClient,
+    ) -> Result<Document, Error> {
+        let session_identification = self.session_identification()?;
+        cdn_client
+            .upload(session_identification, file.to_string())
+            .await
+    }
+
+    /// Download a file from the CDN
+    pub async fn download_file(
+        &self,
+        document_id: String,
+        cdn_client: &rawclient::CdnClient,
+    ) -> Result<Vec<u8>, Error> {
+        let session_identification = self.session_identification()?;
+        cdn_client
+            .download(session_identification, document_id)
             .await
     }
 

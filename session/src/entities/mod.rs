@@ -6,4 +6,3 @@ pub use session::RegisterRequest;
 pub use session::Session;
 pub use session::SessionEstablished;
 pub use session::SessionHolder;
-pub use session::SessionIdentification;

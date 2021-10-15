@@ -1,7 +1,7 @@
 use rawclient::Error;
 use serde_json::json;
-use session::SessionIdentification;
 use types::Peer;
+use types::SessionIdentification;
 
 pub async fn get_me(
     client: &rawclient::Client,

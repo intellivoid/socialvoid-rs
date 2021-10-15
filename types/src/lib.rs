@@ -1,5 +1,12 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SessionIdentification {
+    pub session_id: String,
+    pub client_public_hash: String,
+    pub challenge_answer: String,
+}
+
 /// A Peer Object that contains information about the peer
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Peer {
@@ -27,13 +34,12 @@ pub struct DisplayPictureSize {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Document {
-    id: String,
-    file_mime: String,
-    file_name: String,
-    file_size: u32,
-    file_type: FileType,
-    flags: Vec<String>,
-    created_timestamp: i32,
+    pub id: String,
+    pub file_mime: String,
+    pub file_name: String,
+    pub file_size: u32,
+    pub file_type: FileType,
+    pub flags: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
