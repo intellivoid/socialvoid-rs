@@ -30,6 +30,9 @@ enum_from_primitive! {
         FileTooLarge = 8463,
         InvalidHelpDocumentId = 8464,
         AgreementRequired = 8465,
+        InvalidCursorValue = 8466,
+        InvalidGeoLocation = 8467,
+        InvalidUrlValue = 8468,
     }
 }
 
