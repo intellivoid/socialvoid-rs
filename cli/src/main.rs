@@ -10,6 +10,7 @@ async fn main() {
     let args = Cli::from_args();
     let config = load_config();
     let mut sv = sv_client::new_empty_client();
+    sv.reset_cdn_url().await.unwrap(); //set proper CDN url
     let mut current_session: usize = std::env::var("SV_CURRENT_SESSION")
         .unwrap_or_else(|_| "0".to_string())
         .parse()

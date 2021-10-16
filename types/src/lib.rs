@@ -97,12 +97,12 @@ pub enum TextEntityType {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServerInformation {
-    network_name: String,
-    protocol_version: String,
-    cdn_server: String,
-    upload_max_file_size: u32,
-    unauthorized_session_ttl: u32,
-    authorized_session_ttl: u32,
+    pub network_name: String,
+    pub protocol_version: String,
+    pub cdn_server: String,
+    pub upload_max_file_size: u32,
+    pub unauthorized_session_ttl: u32,
+    pub authorized_session_ttl: u32,
 }
 
 #[cfg(test)]

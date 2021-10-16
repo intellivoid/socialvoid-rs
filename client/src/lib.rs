@@ -9,6 +9,7 @@ use types::Peer;
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, Error> {
     let rpc_client = rawclient::new();
+    let cdn_client = make_cdn_client_from(&rpc_client).await?;
     let client_info = ClientInfo::generate();
     let mut session = SessionHolder::new(client_info.clone());
     session.create(&rpc_client).await?;
@@ -18,26 +19,41 @@ pub async fn new_with_defaults() -> Result<Client, Error> {
         sessions,
         client_info,
         rpc_client,
+        cdn_client,
     })
 }
 
+/// Creates the CDN client by resolving the host url from server information
+async fn make_cdn_client_from(
+    rpc_client: &rawclient::Client,
+) -> Result<rawclient::CdnClient, Error> {
+    let server_info = help::get_server_information(&rpc_client).await?;
+
+    Ok(rawclient::CdnClient::with_cdn_url(server_info.cdn_server))
+}
+
 /// Create a client with user defined client info and sessions
+/// And CDN as gven in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
-pub fn new(client_info: ClientInfo, sessions: Vec<SessionHolder>) -> Result<Client, Error> {
+pub async fn new(client_info: ClientInfo, sessions: Vec<SessionHolder>) -> Result<Client, Error> {
     let rpc_client = rawclient::new();
+    let cdn_client = make_cdn_client_from(&rpc_client).await?;
     Ok(Client {
         sessions,
         client_info,
         rpc_client,
+        cdn_client,
     })
 }
 
 /// Create a client with generated client info and zero sessions
+/// Note that, cdn client may not be the one taken from server information
 pub fn new_empty_client() -> Client {
     Client {
         sessions: Vec::new(),
         client_info: ClientInfo::generate(),
         rpc_client: rawclient::new(),
+        cdn_client: rawclient::CdnClient::new(),
     }
 }
 
@@ -46,9 +62,16 @@ pub struct Client {
     pub sessions: Vec<SessionHolder>,
     client_info: ClientInfo,
     rpc_client: rawclient::Client,
+    cdn_client: rawclient::CdnClient,
 }
 
 impl Client {
+    /// Set the CDN server URL from the ServerInfomation
+    pub async fn reset_cdn_url(&mut self) -> Result<(), Error> {
+        self.cdn_client = make_cdn_client_from(&self.rpc_client).await?;
+        Ok(())
+    }
+
     /// Saves all your sessions to a file
     pub fn save_sessions(&self, filename: &str) -> Result<(), std::io::Error> {
         // let filename = "social-void-rust.sessions";
