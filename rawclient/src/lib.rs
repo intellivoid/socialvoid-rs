@@ -7,10 +7,10 @@ mod error;
 extern crate enum_primitive;
 // use futures::stream::TryStreamExt;
 use std::convert::TryFrom;
-// use tokio::fs::File;
-// use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio::fs::File;
+use tokio_util::codec::{BytesCodec, FramedRead};
 
-use tokio::io::AsyncReadExt;
+// use tokio::io::AsyncReadExt;
 
 pub use error::errors::AuthenticationError;
 pub use error::errors::ClientError;
@@ -21,7 +21,7 @@ use types::Document;
 use types::SessionIdentification;
 
 use reqwest::multipart::Part;
-// use reqwest::{Body};
+use reqwest::Body;
 use serde::Deserialize;
 
 const HOST: &str = "http://socialvoid.qlg1.com:5601/";
@@ -74,12 +74,15 @@ impl CdnClient {
         session_identificatin: SessionIdentification,
         file_path: String,
     ) -> Result<Document, Error> {
-        let mut file_bytes = vec![];
-        let mut document = tokio::fs::File::open(&file_path).await?;
-        document.read_to_end(&mut file_bytes).await?;
+        // let mut file_bytes = vec![];
+        let document = tokio::fs::File::open(&file_path).await?;
+        // document.read_to_end(&mut file_bytes).await?;
         let form = reqwest::multipart::Form::new()
-            // .part("document", Part::stream(file_to_body(document)))
-            .part("document", Part::bytes(file_bytes).file_name(file_path))
+            .part(
+                "document",
+                Part::stream(file_to_body(document)).file_name(file_path),
+            )
+            // .part("document", Part::bytes(file_bytes).file_name(file_path))
             .text(
                 "client_public_hash",
                 session_identificatin.client_public_hash, //remove the clonse
@@ -104,7 +107,6 @@ impl CdnClient {
         document_id: String,
     ) -> Result<Vec<u8>, Error> {
         let form = reqwest::multipart::Form::new()
-            // .part("document", Part::stream(file_to_body(document)))
             .text("document", document_id)
             .text(
                 "client_public_hash",
@@ -164,8 +166,8 @@ fn get_host() -> String {
     HOST.to_string()
 }
 
-// fn file_to_body(file: File) -> Body {
-//     let stream = FramedRead::new(file, BytesCodec::new());
-//     let body = Body::wrap_stream(stream);
-//     body
-// }
+fn file_to_body(file: File) -> Body {
+    let stream = FramedRead::new(file, BytesCodec::new());
+    let body = Body::wrap_stream(stream);
+    body
+}
