@@ -51,12 +51,21 @@ impl Client {
 
 pub struct CdnClient {
     client: reqwest::Client,
+    host_url: String,
 }
 
 impl CdnClient {
     pub fn new() -> CdnClient {
         CdnClient {
             client: reqwest::Client::new(),
+            host_url: get_cdn_url(),
+        }
+    }
+
+    pub fn with_cdn_url(host_url: String) -> CdnClient {
+        CdnClient {
+            client: reqwest::Client::new(),
+            host_url,
         }
     }
 
@@ -80,7 +89,7 @@ impl CdnClient {
             .text("action", "upload");
         let resp: CdnResponse<Document> = self
             .client
-            .post(get_cdn_url())
+            .post(&self.host_url)
             .multipart(form)
             .send()
             .await?
@@ -107,7 +116,7 @@ impl CdnClient {
 
         let response = self
             .client
-            .post(get_cdn_url())
+            .post(&self.host_url)
             .multipart(form)
             .send()
             .await?;
