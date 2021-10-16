@@ -167,7 +167,5 @@ fn get_host() -> String {
 }
 
 fn file_to_body(file: File) -> Body {
-    let stream = FramedRead::new(file, BytesCodec::new());
-    let body = Body::wrap_stream(stream);
-    body
+    Body::wrap_stream(FramedRead::new(file, BytesCodec::new()))
 }
