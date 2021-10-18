@@ -1,7 +1,7 @@
-use client as sv_client;
-use rawclient::{AuthenticationError, ErrorKind};
 use rpassword::read_password;
 use serde::{Deserialize, Serialize};
+use socialvoid as sv_client;
+use socialvoid_rawclient::{AuthenticationError, ErrorKind};
 use std::io::{stdin, stdout, Write};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -1,11 +1,11 @@
 use super::ClientInfo;
-use rawclient::ClientError;
-use rawclient::Error;
 use serde::{Deserialize, Serialize};
-use types::Document;
-pub use types::HelpDocument;
-use types::Peer;
-use types::SessionIdentification;
+use socialvoid_rawclient::ClientError;
+use socialvoid_rawclient::Error;
+use socialvoid_types::Document;
+pub use socialvoid_types::HelpDocument;
+use socialvoid_types::Peer;
+use socialvoid_types::SessionIdentification;
 
 use super::session_challenge::answer_challenge;
 
@@ -46,7 +46,7 @@ impl SessionHolder {
     /// Creates a session and sets a session established object which contains a challenge.
     /// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
     /// object using the `get_session` method to get the Session object.
-    pub async fn create(&mut self, rpc_client: &rawclient::Client) -> Result<(), Error> {
+    pub async fn create(&mut self, rpc_client: &socialvoid_rawclient::Client) -> Result<(), Error> {
         let client_info = &self.client_info;
         self.established = Some(
             rpc_client
@@ -58,7 +58,10 @@ impl SessionHolder {
 
     /// `session.get`
     /// Returns a `Session`
-    pub async fn get(&mut self, rpc_client: &rawclient::Client) -> Result<Session, Error> {
+    pub async fn get(
+        &mut self,
+        rpc_client: &socialvoid_rawclient::Client,
+    ) -> Result<Session, Error> {
         let session_identification = self.session_identification()?;
         let sesh: Session = rpc_client
             .send_request(
@@ -74,7 +77,7 @@ impl SessionHolder {
     /// Authenticates a user via a username & password and optionally an OTP - extends session expiration time
     pub async fn authenticate_user(
         &mut self,
-        rpc_client: &rawclient::Client,
+        rpc_client: &socialvoid_rawclient::Client,
         username: String,
         password: String,
         otp: Option<String>,
@@ -97,7 +100,10 @@ impl SessionHolder {
 
     /// `session.logout`
     /// Log out without destroying the session - changes the session expiration date too
-    pub async fn logout(&mut self, rpc_client: &rawclient::Client) -> Result<bool, Error> {
+    pub async fn logout(
+        &mut self,
+        rpc_client: &socialvoid_rawclient::Client,
+    ) -> Result<bool, Error> {
         let session_identification = self.session_identification()?;
         let response = rpc_client
             .send_request(
@@ -114,7 +120,7 @@ impl SessionHolder {
     pub async fn register(
         &mut self,
         request: RegisterRequest,
-        rpc_client: &rawclient::Client,
+        rpc_client: &socialvoid_rawclient::Client,
     ) -> Result<Peer, Error> {
         let session_identification = self.session_identification()?;
 
@@ -140,7 +146,7 @@ impl SessionHolder {
     pub async fn upload_file(
         &self,
         file: &str,
-        cdn_client: &rawclient::CdnClient,
+        cdn_client: &socialvoid_rawclient::CdnClient,
     ) -> Result<Document, Error> {
         let session_identification = self.session_identification()?;
         cdn_client
@@ -152,7 +158,7 @@ impl SessionHolder {
     pub async fn download_file(
         &self,
         document_id: String,
-        cdn_client: &rawclient::CdnClient,
+        cdn_client: &socialvoid_rawclient::CdnClient,
     ) -> Result<Vec<u8>, Error> {
         let session_identification = self.session_identification()?;
         cdn_client
@@ -162,7 +168,7 @@ impl SessionHolder {
 
     /// Accepts the terms of service
     /// The client must explicitly call `session.accept_terms_of_service(terms_of_service)` to
-    /// accept the terms of service. The HelpDocument can be acquired via `help::get_terms_of_service(rawclient)`
+    /// accept the terms of service. The HelpDocument can be acquired via `help::get_terms_of_service(socialvoid_rawclient)`
     pub fn accept_terms_of_service(&mut self, tos: HelpDocument) {
         self.tos_read = Some(tos.id);
     }

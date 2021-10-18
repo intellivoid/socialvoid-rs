@@ -82,7 +82,7 @@ mod tests {
         let client_info = ClientInfo::generate();
         let private_hash = client_info.private_hash.clone();
         let mut session = SessionHolder::new(client_info);
-        let client = rawclient::new();
+        let client = socialvoid_rawclient::new();
         session
             .create(&client)
             .await

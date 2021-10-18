@@ -1,6 +1,6 @@
 mod entities;
 
-extern crate rawclient;
+extern crate socialvoid_rawclient;
 
 #[macro_use]
 extern crate serde_json;
@@ -17,11 +17,11 @@ mod tests {
     use entities::RegisterRequest;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
-    use rawclient::{ClientError, Error, ErrorKind};
+    use socialvoid_rawclient::{ClientError, Error, ErrorKind};
     #[tokio::test]
     async fn it_should_establish_a_session_and_get_it() -> Result<(), Error> {
         let mut session = SessionHolder::new(ClientInfo::generate());
-        let client = rawclient::new();
+        let client = socialvoid_rawclient::new();
         session.create(&client).await?;
 
         let sesh = session.get(&client).await?;
@@ -34,7 +34,7 @@ mod tests {
         let creds: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string("../client/test_creds.test").unwrap())?;
         let mut session = SessionHolder::new(ClientInfo::generate());
-        let client = rawclient::new();
+        let client = socialvoid_rawclient::new();
         session.create(&client).await?;
 
         assert_eq!(
@@ -56,7 +56,7 @@ mod tests {
             .map(char::from)
             .collect();
         std::fs::write(file_name, file_content.clone()).unwrap();
-        let cdn_client = rawclient::CdnClient::new();
+        let cdn_client = socialvoid_rawclient::CdnClient::new();
         let document = session.upload_file(file_name, &cdn_client).await?;
         println!("Document: {:#?}", document);
         std::fs::remove_file(file_name).unwrap();
@@ -84,7 +84,7 @@ mod tests {
     #[tokio::test]
     async fn it_should_throw_a_terms_of_service_not_agreed_error() -> Result<(), Error> {
         let mut session = SessionHolder::new(ClientInfo::generate());
-        let client = rawclient::new();
+        let client = socialvoid_rawclient::new();
         session.create(&client).await?;
         let response = session
             .register(

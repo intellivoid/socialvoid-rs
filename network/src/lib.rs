@@ -1,7 +1,8 @@
-use rawclient::Error;
 use serde_json::json;
-use types::Peer;
-use types::SessionIdentification;
+use socialvoid_rawclient as rawclient;
+use socialvoid_rawclient::Error;
+use socialvoid_types::Peer;
+use socialvoid_types::SessionIdentification;
 
 pub async fn get_me(
     client: &rawclient::Client,
@@ -21,7 +22,7 @@ pub async fn get_me(
 mod tests {
     use super::*;
     use rawclient::{AuthenticationError, ErrorKind};
-    use session::{ClientInfo, SessionHolder};
+    use socialvoid_session::{ClientInfo, SessionHolder};
     #[tokio::test]
     async fn it_should_return_a_session_not_found_error_if_session_unauthenticated() {
         let client = rawclient::new();

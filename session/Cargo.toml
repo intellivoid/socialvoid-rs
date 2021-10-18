@@ -1,13 +1,13 @@
 [package]
-name = "session"
+name = "socialvoid_session"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rawclient = {path = "../rawclient"}
-types = {path = "../types"}
+socialvoid_rawclient = {path = "../rawclient"}
+socialvoid_types = {path = "../types"}
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0.67"
 sha256 = "1.0.2"

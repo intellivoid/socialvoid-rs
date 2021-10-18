@@ -1,13 +1,13 @@
 [package]
-name = "network"
+name = "socialvoid_network"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rawclient = {path = "../rawclient"}
-session = {path = "../session"}
-types = {path = "../types"}
+socialvoid_rawclient = {path = "../rawclient"}
+socialvoid_session = {path = "../session"}
+socialvoid_types = {path = "../types"}
 tokio = {version = "1.11.0", features = ["full"]}
 serde_json = "1.0.67"

@@ -1,30 +1,36 @@
-use rawclient::Error;
-use types::{HelpDocument, ServerInformation};
+use socialvoid_rawclient::Error;
+use socialvoid_types::{HelpDocument, ServerInformation};
 
 #[macro_use]
 extern crate serde_json;
 
-pub async fn get_community_guidelines(client: &rawclient::Client) -> Result<HelpDocument, Error> {
+pub async fn get_community_guidelines(
+    client: &socialvoid_rawclient::Client,
+) -> Result<HelpDocument, Error> {
     client
         .send_request("help.get_community_guidelines", json!(null))
         .await
 }
 
-pub async fn get_privacy_policy(client: &rawclient::Client) -> Result<HelpDocument, Error> {
+pub async fn get_privacy_policy(
+    client: &socialvoid_rawclient::Client,
+) -> Result<HelpDocument, Error> {
     client
         .send_request("help.get_privacy_policy", json!(null))
         .await
 }
 
 pub async fn get_server_information(
-    client: &rawclient::Client,
+    client: &socialvoid_rawclient::Client,
 ) -> Result<ServerInformation, Error> {
     client
         .send_request("help.get_server_information", json!(null))
         .await
 }
 
-pub async fn get_terms_of_service(client: &rawclient::Client) -> Result<HelpDocument, Error> {
+pub async fn get_terms_of_service(
+    client: &socialvoid_rawclient::Client,
+) -> Result<HelpDocument, Error> {
     client
         .send_request("help.get_terms_of_service", json!(null))
         .await
@@ -36,7 +42,7 @@ mod tests {
     #[tokio::test]
     pub async fn save_all_documents() {
         use std::fs::File;
-        let client = rawclient::new();
+        let client = socialvoid_rawclient::new();
         serde_json::to_writer(
             &File::create("community_guidelines.json.test").unwrap(),
             &get_community_guidelines(&client).await.unwrap(),

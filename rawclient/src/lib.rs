@@ -17,8 +17,8 @@ pub use error::errors::ClientError;
 pub use error::Error;
 pub use error::ErrorKind;
 
-use types::Document;
-use types::SessionIdentification;
+use socialvoid_types::Document;
+use socialvoid_types::SessionIdentification;
 
 use reqwest::multipart::Part;
 use reqwest::Body;
@@ -71,7 +71,7 @@ impl CdnClient {
 
     pub async fn upload(
         &self,
-        session_identificatin: SessionIdentification,
+        session_identification: SessionIdentification,
         file_path: String,
     ) -> Result<Document, Error> {
         // let mut file_bytes = vec![];
@@ -85,11 +85,12 @@ impl CdnClient {
             // .part("document", Part::bytes(file_bytes).file_name(file_path))
             .text(
                 "client_public_hash",
-                session_identificatin.client_public_hash, //remove the clonse
+                session_identification.client_public_hash,
             )
-            .text("session_id", session_identificatin.session_id)
-            .text("challenge_answer", session_identificatin.challenge_answer)
+            .text("session_id", session_identification.session_id)
+            .text("challenge_answer", session_identification.challenge_answer)
             .text("action", "upload");
+
         let resp: CdnResponse<Document> = self
             .client
             .post(&self.host_url)
@@ -103,17 +104,17 @@ impl CdnClient {
 
     pub async fn download(
         &self,
-        session_identificatin: SessionIdentification,
+        session_identification: SessionIdentification,
         document_id: String,
     ) -> Result<Vec<u8>, Error> {
         let form = reqwest::multipart::Form::new()
             .text("document", document_id)
             .text(
                 "client_public_hash",
-                session_identificatin.client_public_hash, //remove the clonse
+                session_identification.client_public_hash, //remove the clonse
             )
-            .text("session_id", session_identificatin.session_id)
-            .text("challenge_answer", session_identificatin.challenge_answer)
+            .text("session_id", session_identification.session_id)
+            .text("challenge_answer", session_identification.challenge_answer)
             .text("action", "download");
 
         let response = self

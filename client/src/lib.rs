@@ -1,14 +1,14 @@
-use rawclient::Error;
-use session::ClientInfo;
-use session::RegisterRequest;
-use session::Session;
-use session::SessionHolder;
-use types::HelpDocument;
-use types::Peer;
+use socialvoid_rawclient::Error;
+use socialvoid_session::ClientInfo;
+use socialvoid_session::RegisterRequest;
+use socialvoid_session::Session;
+use socialvoid_session::SessionHolder;
+use socialvoid_types::HelpDocument;
+use socialvoid_types::Peer;
 
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, Error> {
-    let rpc_client = rawclient::new();
+    let rpc_client = socialvoid_rawclient::new();
     let cdn_client = make_cdn_client_from(&rpc_client).await?;
     let client_info = ClientInfo::generate();
     let mut session = SessionHolder::new(client_info.clone());
@@ -25,18 +25,20 @@ pub async fn new_with_defaults() -> Result<Client, Error> {
 
 /// Creates the CDN client by resolving the host url from server information
 async fn make_cdn_client_from(
-    rpc_client: &rawclient::Client,
-) -> Result<rawclient::CdnClient, Error> {
-    let server_info = help::get_server_information(&rpc_client).await?;
+    rpc_client: &socialvoid_rawclient::Client,
+) -> Result<socialvoid_rawclient::CdnClient, Error> {
+    let server_info = socialvoid_help::get_server_information(&rpc_client).await?;
 
-    Ok(rawclient::CdnClient::with_cdn_url(server_info.cdn_server))
+    Ok(socialvoid_rawclient::CdnClient::with_cdn_url(
+        server_info.cdn_server,
+    ))
 }
 
 /// Create a client with user defined client info and sessions
 /// And CDN as gven in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
 pub async fn new(client_info: ClientInfo, sessions: Vec<SessionHolder>) -> Result<Client, Error> {
-    let rpc_client = rawclient::new();
+    let rpc_client = socialvoid_rawclient::new();
     let cdn_client = make_cdn_client_from(&rpc_client).await?;
     Ok(Client {
         sessions,
@@ -52,8 +54,8 @@ pub fn new_empty_client() -> Client {
     Client {
         sessions: Vec::new(),
         client_info: ClientInfo::generate(),
-        rpc_client: rawclient::new(),
-        cdn_client: rawclient::CdnClient::new(),
+        rpc_client: socialvoid_rawclient::new(),
+        cdn_client: socialvoid_rawclient::CdnClient::new(),
     }
 }
 
@@ -61,8 +63,8 @@ pub fn new_empty_client() -> Client {
 pub struct Client {
     pub sessions: Vec<SessionHolder>,
     client_info: ClientInfo,
-    rpc_client: rawclient::Client,
-    cdn_client: rawclient::CdnClient,
+    rpc_client: socialvoid_rawclient::Client,
+    cdn_client: socialvoid_rawclient::CdnClient,
 }
 
 impl Client {
@@ -107,7 +109,7 @@ impl Client {
 
     /// Get terms of service
     pub async fn get_terms_of_service(&self) -> Result<HelpDocument, Error> {
-        help::get_terms_of_service(&self.rpc_client).await
+        socialvoid_help::get_terms_of_service(&self.rpc_client).await
     }
 
     /// Accept terms of service for a specific session
@@ -150,7 +152,7 @@ impl Client {
     }
 
     pub async fn get_me(&self, session_key: usize) -> Result<Peer, Error> {
-        network::get_me(
+        socialvoid_network::get_me(
             &self.rpc_client,
             self.sessions[session_key].session_identification()?,
         )

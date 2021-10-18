@@ -104,28 +104,15 @@ dependencies = [
 name = "cli"
 version = "0.1.0"
 dependencies = [
- "client",
- "rawclient",
  "rpassword",
  "serde",
  "serde_json",
- "session",
  "shellexpand",
+ "socialvoid",
+ "socialvoid_rawclient",
+ "socialvoid_session",
  "structopt",
  "tokio",
-]
-
-[[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "help",
- "network",
- "rawclient",
- "serde_json",
- "session",
- "tokio",
- "types",
 ]
 
 [[package]]
@@ -394,17 +381,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "help"
-version = "0.1.0"
-dependencies = [
- "rawclient",
- "serde",
- "serde_json",
- "tokio",
- "types",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,17 +624,6 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
-]
-
-[[package]]
-name = "network"
-version = "0.1.0"
-dependencies = [
- "rawclient",
- "serde_json",
- "session",
- "tokio",
- "types",
 ]
 
 [[package]]
@@ -940,21 +905,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rawclient"
-version = "0.1.0"
-dependencies = [
- "enum_primitive",
- "futures",
- "jsonrpc2-client",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "types",
-]
-
-[[package]]
 name = "rdrand"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1145,23 +1095,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "session"
-version = "0.1.0"
-dependencies = [
- "base32",
- "byteorder",
- "pad",
- "rand 0.8.4",
- "rawclient",
- "rust-crypto",
- "serde",
- "serde_json",
- "sha256",
- "tokio",
- "types",
-]
-
-[[package]]
 name = "sha2"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1213,6 +1146,82 @@ name = "smallvec"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
+
+[[package]]
+name = "socialvoid"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "socialvoid_help",
+ "socialvoid_network",
+ "socialvoid_rawclient",
+ "socialvoid_session",
+ "socialvoid_types",
+ "tokio",
+]
+
+[[package]]
+name = "socialvoid_help"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "socialvoid_rawclient",
+ "socialvoid_types",
+ "tokio",
+]
+
+[[package]]
+name = "socialvoid_network"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "socialvoid_rawclient",
+ "socialvoid_session",
+ "socialvoid_types",
+ "tokio",
+]
+
+[[package]]
+name = "socialvoid_rawclient"
+version = "0.1.0"
+dependencies = [
+ "enum_primitive",
+ "futures",
+ "jsonrpc2-client",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "socialvoid_types",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
+name = "socialvoid_session"
+version = "0.1.0"
+dependencies = [
+ "base32",
+ "byteorder",
+ "pad",
+ "rand 0.8.4",
+ "rust-crypto",
+ "serde",
+ "serde_json",
+ "sha256",
+ "socialvoid_rawclient",
+ "socialvoid_types",
+ "tokio",
+]
+
+[[package]]
+name = "socialvoid_types"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tokio",
+]
 
 [[package]]
 name = "socket2"
@@ -1405,15 +1414,6 @@ name = "typenum"
 version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b63708a265f51345575b27fe43f9500ad611579e764c79edbc2037b1121959ec"
-
-[[package]]
-name = "types"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "tokio",
-]
 
 [[package]]
 name = "unicase"
