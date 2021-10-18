@@ -1,8 +1,12 @@
+pub mod help;
+pub mod network;
+pub mod session;
+
+use session::ClientInfo;
+use session::RegisterRequest;
+use session::Session;
+use session::SessionHolder;
 use socialvoid_rawclient::Error;
-use socialvoid_session::ClientInfo;
-use socialvoid_session::RegisterRequest;
-use socialvoid_session::Session;
-use socialvoid_session::SessionHolder;
 use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
 
@@ -27,7 +31,7 @@ pub async fn new_with_defaults() -> Result<Client, Error> {
 async fn make_cdn_client_from(
     rpc_client: &socialvoid_rawclient::Client,
 ) -> Result<socialvoid_rawclient::CdnClient, Error> {
-    let server_info = socialvoid_help::get_server_information(&rpc_client).await?;
+    let server_info = help::get_server_information(&rpc_client).await?;
 
     Ok(socialvoid_rawclient::CdnClient::with_cdn_url(
         server_info.cdn_server,
@@ -109,7 +113,7 @@ impl Client {
 
     /// Get terms of service
     pub async fn get_terms_of_service(&self) -> Result<HelpDocument, Error> {
-        socialvoid_help::get_terms_of_service(&self.rpc_client).await
+        help::get_terms_of_service(&self.rpc_client).await
     }
 
     /// Accept terms of service for a specific session
@@ -152,7 +156,7 @@ impl Client {
     }
 
     pub async fn get_me(&self, session_key: usize) -> Result<Peer, Error> {
-        socialvoid_network::get_me(
+        network::get_me(
             &self.rpc_client,
             self.sessions[session_key].session_identification()?,
         )

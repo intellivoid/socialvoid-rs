@@ -110,7 +110,6 @@ dependencies = [
  "shellexpand",
  "socialvoid",
  "socialvoid_rawclient",
- "socialvoid_session",
  "structopt",
  "tokio",
 ]
@@ -1151,33 +1150,15 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 name = "socialvoid"
 version = "0.1.0"
 dependencies = [
- "serde_json",
- "socialvoid_help",
- "socialvoid_network",
- "socialvoid_rawclient",
- "socialvoid_session",
- "socialvoid_types",
- "tokio",
-]
-
-[[package]]
-name = "socialvoid_help"
-version = "0.1.0"
-dependencies = [
+ "base32",
+ "byteorder",
+ "pad",
+ "rand 0.8.4",
+ "rust-crypto",
  "serde",
  "serde_json",
+ "sha256",
  "socialvoid_rawclient",
- "socialvoid_types",
- "tokio",
-]
-
-[[package]]
-name = "socialvoid_network"
-version = "0.1.0"
-dependencies = [
- "serde_json",
- "socialvoid_rawclient",
- "socialvoid_session",
  "socialvoid_types",
  "tokio",
 ]
@@ -1195,23 +1176,6 @@ dependencies = [
  "socialvoid_types",
  "tokio",
  "tokio-util",
-]
-
-[[package]]
-name = "socialvoid_session"
-version = "0.1.0"
-dependencies = [
- "base32",
- "byteorder",
- "pad",
- "rand 0.8.4",
- "rust-crypto",
- "serde",
- "serde_json",
- "sha256",
- "socialvoid_rawclient",
- "socialvoid_types",
- "tokio",
 ]
 
 [[package]]

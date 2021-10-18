@@ -1,5 +1,6 @@
 use super::ClientInfo;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use socialvoid_rawclient::ClientError;
 use socialvoid_rawclient::Error;
 use socialvoid_types::Document;

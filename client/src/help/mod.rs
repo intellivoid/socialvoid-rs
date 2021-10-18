@@ -1,8 +1,6 @@
+use serde_json::json;
 use socialvoid_rawclient::Error;
 use socialvoid_types::{HelpDocument, ServerInformation};
-
-#[macro_use]
-extern crate serde_json;
 
 pub async fn get_community_guidelines(
     client: &socialvoid_rawclient::Client,

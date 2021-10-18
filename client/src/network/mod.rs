@@ -21,8 +21,8 @@ pub async fn get_me(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::session::{ClientInfo, SessionHolder};
     use rawclient::{AuthenticationError, ErrorKind};
-    use socialvoid_session::{ClientInfo, SessionHolder};
     #[tokio::test]
     async fn it_should_return_a_session_not_found_error_if_session_unauthenticated() {
         let client = rawclient::new();

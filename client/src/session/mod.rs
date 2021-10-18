@@ -1,10 +1,5 @@
 mod entities;
 
-extern crate socialvoid_rawclient;
-
-#[macro_use]
-extern crate serde_json;
-
 pub use entities::ClientInfo;
 pub use entities::RegisterRequest;
 pub use entities::Session;

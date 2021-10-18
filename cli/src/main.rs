@@ -1,5 +1,5 @@
 use socialvoid as sv_client;
-use socialvoid_session::RegisterRequest;
+use socialvoid::session::RegisterRequest;
 use structopt::StructOpt;
 
 mod utils;

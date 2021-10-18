@@ -37,10 +37,10 @@ impl Client {
     ) -> Result<T, RpcError> {
         let request = RawRequest::new(Some(generate_id()), method.to_string(), Some(params));
 
-        dbg!(
-            "Request: {}",
-            serde_json::to_string_pretty(&request).unwrap()
-        );
+        // dbg!(
+        //     "Request: {}",
+        //     serde_json::to_string_pretty(&request).unwrap()
+        // );
 
         //TODO: maybe check the response better as well??
         let resp: serde_json::Value = self
@@ -52,7 +52,7 @@ impl Client {
             .json()
             .await?;
 
-        dbg!("{}", serde_json::to_string_pretty(&resp).unwrap());
+        // dbg!("{}", serde_json::to_string_pretty(&resp).unwrap());
         let resp: RawResponse<T> = serde_json::value::from_value(resp).unwrap();
         resp.result()
     }
@@ -65,10 +65,10 @@ impl Client {
     ) -> Result<(), RpcError> {
         let request = RawRequest::new(None, method.to_string(), Some(params));
 
-        dbg!(
-            "Request: {}",
-            serde_json::to_string_pretty(&request).unwrap()
-        );
+        // dbg!(
+        //     "Request: {}",
+        //     serde_json::to_string_pretty(&request).unwrap()
+        // );
 
         self.client
             .post(&self.host_url)
