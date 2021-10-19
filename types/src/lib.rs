@@ -105,6 +105,19 @@ pub struct ServerInformation {
     pub authorized_session_ttl: u32,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Profile {
+    first_name: String,
+    last_name: Option<String>,
+    name: String,
+    biography: Option<String>,
+    location: Option<String>,
+    url: Option<String>,
+    followers_count: u32,
+    following_count: u32,
+    display_picture_sizes: Vec<DisplayPictureSize>,
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

@@ -2,6 +2,7 @@ use serde_json::json;
 use socialvoid_rawclient as rawclient;
 use socialvoid_rawclient::Error;
 use socialvoid_types::Peer;
+use socialvoid_types::Profile;
 use socialvoid_types::SessionIdentification;
 
 pub async fn get_me(
@@ -13,6 +14,25 @@ pub async fn get_me(
             "network.get_me",
             json!({
                 "session_identification": serde_json::to_value(session_identification)?
+            }),
+        )
+        .await
+}
+
+/// GetProfile
+/// `peer` can be 'None' for own profile, otherwise,
+/// 'peer' can be Some(p) where p can be the id or username(with leading @) of the peer.
+pub async fn get_profile(
+    client: &rawclient::Client,
+    session_identification: SessionIdentification,
+    peer: Option<String>,
+) -> Result<Profile, Error> {
+    client
+        .send_request(
+            "network.get_profile",
+            json!({
+                "session_identification": serde_json::to_value(session_identification)?,
+                "peer": peer,
             }),
         )
         .await

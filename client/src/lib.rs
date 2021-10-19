@@ -11,6 +11,7 @@ use socialvoid_rawclient::Error;
 use socialvoid_types::Document;
 use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
+use socialvoid_types::Profile;
 
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, Error> {
@@ -165,6 +166,15 @@ impl Client {
         .await
     }
 
+    pub async fn get_my_profile(&self, session_key: usize) -> Result<Profile, Error> {
+        network::get_profile(
+            &self.rpc_client,
+            self.sessions[session_key].session_identification()?,
+            None,
+        )
+        .await
+    }
+
     pub async fn set_profile_picture(
         &self,
         session_key: usize,
@@ -172,7 +182,7 @@ impl Client {
     ) -> Result<Document, Error> {
         let sesh_id = self.sessions[session_key].session_identification()?;
         let document = self.cdn_client.upload(sesh_id.clone(), filepath).await?;
-        account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone()).await;
+        account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone()).await?; //TODO: use result and send client error if false
         Ok(document)
     }
 }

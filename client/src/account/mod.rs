@@ -11,7 +11,7 @@ pub async fn set_profile_picture(
         .send_request(
             "account.set_profile_picture",
             json!({
-                "session_identification": serde_json::to_value(session_identification),
+                "session_identification": serde_json::to_value(session_identification)?,
                 "document": document_id,
             }),
         )
