@@ -1,3 +1,4 @@
+pub mod account;
 pub mod help;
 pub mod network;
 pub mod session;
@@ -7,6 +8,7 @@ use session::RegisterRequest;
 use session::Session;
 use session::SessionHolder;
 use socialvoid_rawclient::Error;
+use socialvoid_types::Document;
 use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
 
@@ -161,6 +163,17 @@ impl Client {
             self.sessions[session_key].session_identification()?,
         )
         .await
+    }
+
+    pub async fn set_profile_picture(
+        &self,
+        session_key: usize,
+        filepath: String,
+    ) -> Result<Document, Error> {
+        let sesh_id = self.sessions[session_key].session_identification()?;
+        let document = self.cdn_client.upload(sesh_id.clone(), filepath).await?;
+        account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone()).await;
+        Ok(document)
     }
 }
 
