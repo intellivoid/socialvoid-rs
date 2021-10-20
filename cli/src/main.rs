@@ -2,8 +2,12 @@ use socialvoid as sv_client;
 use socialvoid::session::RegisterRequest;
 use structopt::StructOpt;
 
+mod error;
 mod utils;
 use crate::utils::*;
+use error::MyFriendlyError;
+
+// TODO: maybe try to remove ALL the expect calls and use only MyFriendlyError everywhere. + improve the MyFriendlyError
 
 #[tokio::main]
 async fn main() {
@@ -36,7 +40,10 @@ async fn main() {
             //TODO: add OTP support
             match sv.authenticate_user(sk, username, password, None).await {
                 Err(err) => {
-                    println!("Couldn't authenticate the user.\n{:#?}", err);
+                    println!(
+                        "Couldn't authenticate the user.\n{}",
+                        MyFriendlyError::from(err)
+                    );
                 }
                 Ok(_) => {
                     println!("Successfully logged in.");
@@ -89,7 +96,7 @@ async fn main() {
                         .await
                     {
                         Ok(peer) => println!("Registered.\n{:?}", peer),
-                        Err(err) => println!("Couldn't register.\n{:?}", err),
+                        Err(err) => println!("Couldn't register.\n{}", MyFriendlyError::from(err)),
                     }
                 } else {
                     println!("You need to accept the terms of service to register to SocialVoid");
@@ -104,7 +111,7 @@ async fn main() {
 
             match sv.get_me(current_session).await {
                 Ok(response) => println!("{:?}", response),
-                Err(err) => println!("{:?}", err),
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
             }
         }
         Cli::SetProfile { field, value } => {
@@ -121,8 +128,8 @@ async fn main() {
                             }
                             Err(err) => {
                                 println!(
-                                    "An error occurred while setting the profile picture.\n{:?}",
-                                    err
+                                    "An error occurred while setting the profile picture.\n{}",
+                                    MyFriendlyError::from(err)
                                 );
                             }
                         }
