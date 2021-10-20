@@ -23,12 +23,18 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
         }
     }
 
+    if sv.sessions.len() == 0 {
+        sv.new_session()
+            .await
+            .expect("Couldn't create a new session.");
+    }
+
     match sv.get_session(*sesh_key).await {
         Ok(_) => {}
         Err(err) => match err.kind {
             ErrorKind::Authentication(AuthenticationError::SessionExpired)
             | ErrorKind::Authentication(AuthenticationError::SessionNotFound) => {
-                println!("Session either didn't exist or is expired.\nDeleting it and creating a new one.");
+                println!("This session either didn't exist or is expired.\nDeleting it and creating a new one.");
                 sv.delete_session(*sesh_key).await;
                 let new_sesh_key = sv
                     .new_session()
