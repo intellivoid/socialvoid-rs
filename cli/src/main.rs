@@ -107,6 +107,29 @@ async fn main() {
                 Err(err) => println!("{:?}", err),
             }
         }
+        Cli::SetProfile { field, value } => {
+            setup_sessions(&config, &mut sv, &mut current_session).await;
+            match field {
+                ProfileField::Pic => {
+                    if value.is_none() {
+                        println!("You need to specify the path to the picture to upload");
+                    } else {
+                        let filepath = value.unwrap();
+                        match sv.set_profile_picture(current_session, filepath).await {
+                            Ok(doc) => {
+                                println!("Profile picture updated successfully.\n{:?}", doc);
+                            }
+                            Err(err) => {
+                                println!(
+                                    "An error occurred while setting the profile picture.\n{:?}",
+                                    err
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
         Cli::Sync {} => {}
     }
 
@@ -117,9 +140,33 @@ async fn main() {
 
 #[derive(Debug, StructOpt)]
 enum Cli {
-    Login { username: Option<String> },
+    Login {
+        username: Option<String>,
+    },
     Register,
-    Config { server: Option<usize> },
+    Config {
+        server: Option<usize>,
+    },
     GetMe,
+    SetProfile {
+        field: ProfileField,
+        value: Option<String>,
+    },
     Sync {},
+}
+
+#[derive(Debug)]
+#[non_exhaustive]
+enum ProfileField {
+    Pic,
+}
+
+impl std::str::FromStr for ProfileField {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "pic" => Ok(ProfileField::Pic),
+            _ => Err(String::from("Not found")),
+        }
+    }
 }
