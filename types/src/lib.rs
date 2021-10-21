@@ -118,6 +118,50 @@ pub struct Profile {
     display_picture_sizes: Vec<DisplayPictureSize>,
 }
 
+impl std::fmt::Display for Profile {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "First Name: {}
+{}
+Name: {}
+{}
+{}
+{}
+Followers: {}
+Following: {}
+Display Picture: {}",
+            self.first_name,
+            self.last_name
+                .as_ref()
+                .map(|x| format!("Last Name: {}", x))
+                .unwrap_or(String::from("[No last name set]")),
+            self.name,
+            self.biography
+                .as_ref()
+                .map(|x| format!("Biography: {}", x))
+                .unwrap_or(String::from("[No biography set]")),
+            self.location
+                .as_ref()
+                .map(|x| format!("Location: {}", x))
+                .unwrap_or(String::from("[No location set]")),
+            self.url
+                .as_ref()
+                .map(|x| format!("URL: {}", x))
+                .unwrap_or(String::from("[No URL set]")),
+            self.followers_count,
+            self.following_count,
+            if self.display_picture_sizes.is_empty() {
+                String::from("not set")
+            } else {
+                let count = self.display_picture_sizes.len();
+                let name = &self.display_picture_sizes[0].document.file_name;
+                format!("'{}' ({} sizes available)", name, count)
+            }
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

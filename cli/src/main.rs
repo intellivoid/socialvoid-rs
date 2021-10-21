@@ -137,6 +137,28 @@ async fn main() {
                 }
             }
         }
+        Cli::GetProfile { field } => {
+            setup_sessions(&config, &mut sv, &mut current_session).await;
+            match field {
+                Some(field) => match field {
+                    ProfileField::Pic => {
+                        let _filepath
+                            = prompt_stdin("Where would you like to save the profile picture(default: TODO: show path of default directory)?");
+                        unimplemented!()
+                    }
+                },
+                None => {
+                    // The full profile
+                    match sv.get_my_profile(current_session).await {
+                        Ok(profile) => println!("{}", profile),
+                        Err(err) => println!(
+                            "An error occurred while trying to get the profile.\n{}",
+                            MyFriendlyError::from(err)
+                        ),
+                    }
+                }
+            }
+        }
         Cli::Sync {} => {}
     }
 
@@ -158,6 +180,9 @@ enum Cli {
     SetProfile {
         field: ProfileField,
         value: Option<String>,
+    },
+    GetProfile {
+        field: Option<ProfileField>,
     },
     Sync {},
 }
