@@ -3,8 +3,11 @@ use socialvoid_rawclient as rawclient;
 use socialvoid_rawclient::Error;
 use socialvoid_types::Peer;
 use socialvoid_types::Profile;
+use socialvoid_types::RelationshipType;
 use socialvoid_types::SessionIdentification;
 
+/// GetMe
+/// Returns the peer object of the authenticated peer
 pub async fn get_me(
     client: &rawclient::Client,
     session_identification: SessionIdentification,
@@ -30,6 +33,40 @@ pub async fn get_profile(
     client
         .send_request(
             "network.get_profile",
+            json!({
+                "session_identification": serde_json::to_value(session_identification)?,
+                "peer": peer,
+            }),
+        )
+        .await
+}
+
+/// ResolvePeer
+pub async fn resolve_peer(
+    client: &rawclient::Client,
+    session_identification: SessionIdentification,
+    peer: String,
+) -> Result<Peer, Error> {
+    client
+        .send_request(
+            "network.resolve_peer",
+            json!({
+                "session_identification": serde_json::to_value(session_identification)?,
+                "peer": peer,
+            }),
+        )
+        .await
+}
+
+/// UnfollowPeer
+pub async fn unfollow_peer(
+    client: &rawclient::Client,
+    session_identification: SessionIdentification,
+    peer: String,
+) -> Result<RelationshipType, Error> {
+    client
+        .send_request(
+            "network.unfollow_peer",
             json!({
                 "session_identification": serde_json::to_value(session_identification)?,
                 "peer": peer,

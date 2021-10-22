@@ -118,6 +118,19 @@ pub struct Profile {
     display_picture_sizes: Vec<DisplayPictureSize>,
 }
 
+/// Relationship of a peer with another peer.
+/// https://github.com/intellivoid/Socialvoid-Standard-Documentation/blob/master/Types/RelationshipTypes.md
+#[derive(Serialize, Deserialize, Debug)]
+pub enum RelationshipType {
+    NONE,
+    FOLLOWING,
+    FOLLOWS_YOU,
+    AWAITING_APPROVAL,
+    MUTUALLY_FOLLOWING,
+    BLOCKED,
+    BLOCKED_YOU,
+}
+
 impl std::fmt::Display for Profile {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
