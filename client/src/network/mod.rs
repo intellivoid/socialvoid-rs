@@ -81,7 +81,7 @@ mod tests {
     use crate::session::{ClientInfo, SessionHolder};
     use rawclient::{AuthenticationError, ErrorKind};
     #[tokio::test]
-    async fn it_should_return_a_session_not_found_error_if_session_unauthenticated() {
+    async fn it_should_return_a_notauthenticated_error() {
         let client = rawclient::new();
         let mut session = SessionHolder::new(ClientInfo::generate());
         session
@@ -96,13 +96,13 @@ mod tests {
         )
         .await
         {
-            Ok(_) => unreachable!(),
+            Ok(_) => panic!("Session found for some reason.?"),
             Err(error) => match error.kind {
                 ErrorKind::Authentication(error) => match error {
-                    AuthenticationError::SessionNotFound => {}
-                    _ => unreachable!(),
+                    AuthenticationError::NotAuthenticated => {}
+                    authkind => panic!("Unexpected authentication error: {:#?}", authkind),
                 },
-                _ => unreachable!(),
+                kind => panic!("Unexpected error: {:#?}", kind),
             },
         }
     }
