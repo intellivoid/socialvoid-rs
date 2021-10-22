@@ -193,29 +193,20 @@ mod tests {
 
     #[tokio::test]
     async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), Error> {
-        let sessions_file = "sessions.test";
+        // let sessions_file = "sessions.test";
 
         let creds: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())?;
 
-        let mut client = new_empty_client();
-        match client.load_sessions(sessions_file) {
-            Err(_) => {
-                client.new_session().await?;
-
-                client
-                    .authenticate_user(
-                        0,
-                        creds["username"].as_str().unwrap().to_string(),
-                        creds["password"].as_str().unwrap().to_string(),
-                        None,
-                    )
-                    .await?;
-                client.save_sessions(sessions_file).unwrap();
-            }
-            _ => {}
-        }
-        println!("Authenticated. Getting the peer");
+        let mut client = new_with_defaults().await?;
+        client
+            .authenticate_user(
+                0,
+                creds["username"].as_str().unwrap().to_string(),
+                creds["password"].as_str().unwrap().to_string(),
+                None,
+            )
+            .await?;
 
         let peer = client.get_me(0).await?;
 
