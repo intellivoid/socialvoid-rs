@@ -190,8 +190,6 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn it_should_get_a_session() {}
 
     #[tokio::test]
     async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), Error> {
@@ -217,11 +215,12 @@ mod tests {
             }
             _ => {}
         }
+        println!("Authenticated. Getting the peer");
 
         let peer = client.get_me(0).await?;
-        client.logout(0).await?;
 
         println!("{:?}", peer);
+        client.logout(0).await?;
         assert_eq!(
             peer.username,
             creds["username"].as_str().unwrap().to_string()

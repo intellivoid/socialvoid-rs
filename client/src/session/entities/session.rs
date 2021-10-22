@@ -109,7 +109,9 @@ impl SessionHolder {
         let response = rpc_client
             .send_request(
                 "session.logout",
-                serde_json::value::to_value(session_identification)?,
+                json!({
+                    "session_identification":serde_json::value::to_value(session_identification)?
+                }),
             )
             .await?;
         self.authenticated = false;
