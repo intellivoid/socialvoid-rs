@@ -92,7 +92,7 @@ mod tests {
             answer_challenge(private_hash.clone(), established.challenge.clone());
 
         let output = Command::new("python3")
-            .arg("test-hotp.py")
+            .arg("src/session/test-hotp.py")
             .arg(&private_hash)
             .arg(&established.challenge)
             .output()
