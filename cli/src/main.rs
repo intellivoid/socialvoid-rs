@@ -104,7 +104,34 @@ async fn main() {
                 println!("You need to accept the terms of service to register to SocialVoid");
             }
         }
-        Cli::Config { .. } => {}
+        Cli::Config { field, value } => {
+            match field {
+                ConfigField::Sessions => {
+                    setup_sessions(&config, &mut sv, &mut current_session).await;
+                    //Gets the sessions if value is none, other wise sets to a session key that is valid
+                    if let Some(sesh_key) = value {
+                        if let Ok(sesh_key) = sesh_key.parse::<usize>() {
+                            match sv.set_current_session(sesh_key) {
+                                Ok(_) => {
+                                    current_session = sesh_key;
+                                    println!("Changed session to {}\n", sesh_key);
+                                }
+                                Err(err) => println!("{}", MyFriendlyError::from(err)),
+                            }
+                        } else {
+                            println!("Enter the session index for it to switch to a session");
+                            println!("There are {} sessions.", sv.sessions.len());
+                        }
+                    } else {
+                        println!(
+                            "There are {} session(s).\nCurrent session: {}",
+                            sv.sessions.len(),
+                            current_session
+                        );
+                    }
+                }
+            }
+        }
         Cli::GetMe => {
             setup_sessions(&config, &mut sv, &mut current_session).await;
 
@@ -172,7 +199,8 @@ enum Cli {
     },
     Register,
     Config {
-        server: Option<usize>,
+        field: ConfigField,
+        value: Option<String>,
     },
     GetMe,
     SetProfile {
@@ -191,11 +219,26 @@ enum ProfileField {
     Pic,
 }
 
+#[derive(Debug)]
+enum ConfigField {
+    Sessions,
+}
+
 impl std::str::FromStr for ProfileField {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "pic" => Ok(ProfileField::Pic),
+            _ => Err(String::from("Not found")),
+        }
+    }
+}
+
+impl std::str::FromStr for ConfigField {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "sessions" | "session" => Ok(ConfigField::Sessions),
             _ => Err(String::from("Not found")),
         }
     }
