@@ -20,15 +20,14 @@ let mut client = new_with_defaults();
 
 client
     .authenticate_user(
-        0,
         creds["username"].as_str().unwrap().to_string(),
         creds["password"].as_str().unwrap().to_string(),
         None,
     )
     .await?;
 
-let peer = client.get_me(0).await?;
-client.logout(0).await?;
+let peer = client.get_me().await?;
+client.logout().await?;
 
 println!("{:?}", peer);
 assert_eq!(
