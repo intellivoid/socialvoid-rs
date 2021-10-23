@@ -149,20 +149,20 @@ Display Picture: {}",
             self.last_name
                 .as_ref()
                 .map(|x| format!("Last Name: {}", x))
-                .unwrap_or(String::from("[No last name set]")),
+                .unwrap_or_else(|| String::from("[No last name set]")),
             self.name,
             self.biography
                 .as_ref()
                 .map(|x| format!("Biography: {}", x))
-                .unwrap_or(String::from("[No biography set]")),
+                .unwrap_or_else(|| String::from("[No biography set]")),
             self.location
                 .as_ref()
                 .map(|x| format!("Location: {}", x))
-                .unwrap_or(String::from("[No location set]")),
+                .unwrap_or_else(|| String::from("[No location set]")),
             self.url
                 .as_ref()
                 .map(|x| format!("URL: {}", x))
-                .unwrap_or(String::from("[No URL set]")),
+                .unwrap_or_else(|| String::from("[No URL set]")),
             self.followers_count,
             self.following_count,
             if self.display_picture_sizes.is_empty() {
@@ -173,13 +173,5 @@ Display Picture: {}",
                 format!("'{}' ({} sizes available)", name, count)
             }
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }

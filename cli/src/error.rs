@@ -5,7 +5,7 @@ pub struct MyFriendlyError(SocialvoidError);
 
 impl std::convert::From<SocialvoidError> for MyFriendlyError {
     fn from(err: SocialvoidError) -> Self {
-        Self(err.into())
+        Self(err)
     }
 }
 

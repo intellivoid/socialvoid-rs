@@ -115,10 +115,7 @@ async fn main() {
             setup_sessions(&config, &mut sv, &mut current_session).await;
             match field {
                 ProfileField::Pic => {
-                    if value.is_none() {
-                        println!("You need to specify the path to the picture to upload");
-                    } else {
-                        let filepath = value.unwrap();
+                    if let Some(filepath) = value {
                         match sv.set_profile_picture(filepath).await {
                             Ok(doc) => {
                                 println!("Profile picture updated successfully.\n{:?}", doc);
@@ -130,6 +127,8 @@ async fn main() {
                                 );
                             }
                         }
+                    } else {
+                        println!("You need to specify the path to the picture to upload");
                     }
                 }
             }

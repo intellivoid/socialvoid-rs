@@ -37,7 +37,7 @@ pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
 async fn make_cdn_client_from(
     rpc_client: &socialvoid_rawclient::Client,
 ) -> Result<socialvoid_rawclient::CdnClient, SocialvoidError> {
-    let server_info = help::get_server_information(&rpc_client).await?;
+    let server_info = help::get_server_information(rpc_client).await?;
 
     Ok(socialvoid_rawclient::CdnClient::with_cdn_url(
         server_info.cdn_server,

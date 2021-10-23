@@ -25,7 +25,7 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
         }
     }
 
-    if sv.sessions.len() == 0 {
+    if sv.sessions.is_empty() {
         sv.new_session()
             .await
             .expect("Couldn't create a new session.");
