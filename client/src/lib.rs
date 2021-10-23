@@ -25,6 +25,7 @@ pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
     let sessions = vec![session];
 
     Ok(Client {
+        current_session: Some(0),
         sessions,
         client_info,
         rpc_client,
@@ -52,7 +53,9 @@ pub async fn new(
 ) -> Result<Client, SocialvoidError> {
     let rpc_client = socialvoid_rawclient::new();
     let cdn_client = make_cdn_client_from(&rpc_client).await?;
+    let current_session = if sessions.is_empty() { None } else { Some(0) };
     Ok(Client {
+        current_session,
         sessions,
         client_info,
         rpc_client,
@@ -64,6 +67,7 @@ pub async fn new(
 /// Note that, cdn client may not be the one taken from server information
 pub fn new_empty_client() -> Client {
     Client {
+        current_session: None,
         sessions: Vec::new(),
         client_info: ClientInfo::generate(),
         rpc_client: socialvoid_rawclient::new(),
@@ -74,6 +78,7 @@ pub fn new_empty_client() -> Client {
 /// A client that can be used to call methods and manage sessions for Social Void
 pub struct Client {
     pub sessions: Vec<SessionHolder>,
+    current_session: Option<usize>, //Index of the current session
     client_info: ClientInfo,
     rpc_client: socialvoid_rawclient::Client,
     cdn_client: socialvoid_rawclient::CdnClient,
@@ -96,6 +101,9 @@ impl Client {
     /// Loads all sessions from a file and adds them to the client
     pub fn load_sessions(&mut self, fpath: &str) -> Result<(), std::io::Error> {
         let sessions: Vec<SessionHolder> = serde_json::from_reader(&std::fs::File::open(fpath)?)?;
+        if self.sessions.is_empty() && !sessions.is_empty() {
+            self.current_session = Some(0);
+        }
         self.sessions.extend(sessions);
         Ok(())
     }
@@ -109,14 +117,31 @@ impl Client {
         Ok(self.sessions.len() - 1)
     }
 
-    /// Removes a session and returns it
-    pub async fn delete_session(&mut self, session_key: usize) -> SessionHolder {
-        self.sessions.remove(session_key)
+    /// Removes the current session and returns it
+    pub fn delete_session(&mut self) -> Result<SessionHolder, SocialvoidError> {
+        if self.current_session.is_none() {
+            Err(SocialvoidError::Client(ClientError::NoSessionsExist))
+        } else {
+            let sesh_key = self.current_session.unwrap();
+            self.current_session = if sesh_key == self.sessions.len() - 1 {
+                if sesh_key != 0 {
+                    Some(sesh_key - 1)
+                } else {
+                    None
+                }
+            } else {
+                Some(sesh_key)
+            };
+            Ok(self.sessions.remove(sesh_key))
+        }
     }
 
-    /// Gets a Session object for a specific session
-    pub async fn get_session(&mut self, session_key: usize) -> Result<Session, SocialvoidError> {
-        Ok(self.sessions[session_key].get(&self.rpc_client).await?)
+    /// Gets a Session object for the current session
+    pub async fn get_session(&mut self) -> Result<Session, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => Ok(self.sessions[session_key].get(&self.rpc_client).await?),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
     /// Get terms of service
@@ -124,71 +149,99 @@ impl Client {
         Ok(help::get_terms_of_service(&self.rpc_client).await?)
     }
 
-    /// Accept terms of service for a specific session
-    pub fn accept_tos(&mut self, session_key: usize, tos: HelpDocument) {
-        self.sessions[session_key].accept_terms_of_service(tos);
+    /// Accept terms of service for the current session
+    pub fn accept_tos(&mut self, tos: HelpDocument) -> Result<(), SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                self.sessions[session_key].accept_terms_of_service(tos);
+                Ok(())
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    /// Register an account using a specific session
-    pub async fn register(
-        &mut self,
-        session_key: usize,
-        req: RegisterRequest,
-    ) -> Result<Peer, SocialvoidError> {
-        Ok(self.sessions[session_key]
-            .register(req, &self.rpc_client)
-            .await?)
+    /// Register an account using the current session
+    pub async fn register(&mut self, req: RegisterRequest) -> Result<Peer, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => Ok(self.sessions[session_key]
+                .register(req, &self.rpc_client)
+                .await?),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    /// Login to an account using a specific session
+    /// Login to an account using the current session
     pub async fn authenticate_user(
         &mut self,
-        session_key: usize,
         username: String,
         password: String,
         otp: Option<String>,
     ) -> Result<bool, SocialvoidError> {
-        Ok(self.sessions[session_key]
-            .authenticate_user(&self.rpc_client, username, password, otp)
-            .await?)
+        match self.current_session {
+            Some(session_key) => Ok(self.sessions[session_key]
+                .authenticate_user(&self.rpc_client, username, password, otp)
+                .await?),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    /// Check if a session is authenticated
-    pub fn is_authenticated(&self, session_key: usize) -> bool {
-        self.sessions[session_key].authenticated()
+    /// Check if current session is authenticated
+    pub fn is_authenticated(&self) -> Result<bool, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => Ok(self.sessions[session_key].authenticated()),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    /// Log out from a session. Maybe destroy the session??
-    pub async fn logout(&mut self, session_key: usize) -> Result<bool, SocialvoidError> {
-        Ok(self.sessions[session_key].logout(&self.rpc_client).await?)
+    /// Log out from the current session
+    pub async fn logout(&mut self) -> Result<bool, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                let log_out_resp = self.sessions[session_key].logout(&self.rpc_client).await?;
+                self.delete_session()?;
+                Ok(log_out_resp)
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    pub async fn get_me(&self, session_key: usize) -> Result<Peer, SocialvoidError> {
-        Ok(network::get_me(
-            &self.rpc_client,
-            self.sessions[session_key].session_identification()?,
-        )
-        .await?)
+    /// Get Peer object of the authenticated user on the current session.
+    pub async fn get_me(&self) -> Result<Peer, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => Ok(network::get_me(
+                &self.rpc_client,
+                self.sessions[session_key].session_identification()?,
+            )
+            .await?),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    pub async fn get_my_profile(&self, session_key: usize) -> Result<Profile, SocialvoidError> {
-        Ok(network::get_profile(
-            &self.rpc_client,
-            self.sessions[session_key].session_identification()?,
-            None,
-        )
-        .await?)
+    /// Get the profile of the authenticated user on the current session
+    pub async fn get_my_profile(&self) -> Result<Profile, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => Ok(network::get_profile(
+                &self.rpc_client,
+                self.sessions[session_key].session_identification()?,
+                None,
+            )
+            .await?),
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 
-    pub async fn set_profile_picture(
-        &self,
-        session_key: usize,
-        filepath: String,
-    ) -> Result<Document, SocialvoidError> {
-        let sesh_id = self.sessions[session_key].session_identification()?;
-        let document = self.cdn_client.upload(sesh_id.clone(), filepath).await?;
-        account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone()).await?; //TODO: use result and send client error if false
-        Ok(document)
+    /// Set the profile picture of the user on current session
+    pub async fn set_profile_picture(&self, filepath: String) -> Result<Document, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                let sesh_id = self.sessions[session_key].session_identification()?;
+                let document = self.cdn_client.upload(sesh_id.clone(), filepath).await?;
+                account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone())
+                    .await?; //TODO: use result and send client error if false
+                Ok(document)
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
     }
 }
 
@@ -206,17 +259,16 @@ mod tests {
         let mut client = new_with_defaults().await?;
         client
             .authenticate_user(
-                0,
                 creds["username"].as_str().unwrap().to_string(),
                 creds["password"].as_str().unwrap().to_string(),
                 None,
             )
             .await?;
 
-        let peer = client.get_me(0).await?;
+        let peer = client.get_me().await?;
 
         println!("{:?}", peer);
-        client.logout(0).await?;
+        client.logout().await?;
         assert_eq!(
             peer.username,
             creds["username"].as_str().unwrap().to_string()

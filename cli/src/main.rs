@@ -28,7 +28,7 @@ async fn main() {
             } else {
                 prompt_stdin("Your username on [network url here?]: ")
             };
-            let sk = if sv.is_authenticated(current_session) {
+            let sk = if sv.is_authenticated().unwrap() {
                 sv.new_session()
                     .await
                     .expect("Couldn't create a new session.")
@@ -38,7 +38,7 @@ async fn main() {
             current_session = sk;
             let password = prompt_password("Enter password: ");
             //TODO: add OTP support
-            match sv.authenticate_user(sk, username, password, None).await {
+            match sv.authenticate_user(username, password, None).await {
                 Err(err) => {
                     println!(
                         "Couldn't authenticate the user.\n{}",
@@ -52,7 +52,7 @@ async fn main() {
         }
         Cli::Register => {
             setup_sessions(&config, &mut sv, &mut current_session).await;
-            if sv.is_authenticated(current_session) {
+            if sv.is_authenticated().unwrap() {
                 current_session = sv
                     .new_session()
                     .await
@@ -82,17 +82,14 @@ async fn main() {
                     .next();
             if let Some(accept_tos) = accept_tos {
                 if accept_tos == 'y' || accept_tos == 'Y' {
-                    sv.accept_tos(current_session, tos);
+                    sv.accept_tos(tos).unwrap();
                     match sv
-                        .register(
-                            current_session,
-                            RegisterRequest {
-                                username,
-                                password,
-                                first_name,
-                                last_name,
-                            },
-                        )
+                        .register(RegisterRequest {
+                            username,
+                            password,
+                            first_name,
+                            last_name,
+                        })
                         .await
                     {
                         Ok(peer) => println!("Registered.\n{:?}", peer),
@@ -109,7 +106,7 @@ async fn main() {
         Cli::GetMe => {
             setup_sessions(&config, &mut sv, &mut current_session).await;
 
-            match sv.get_me(current_session).await {
+            match sv.get_me().await {
                 Ok(response) => println!("{:?}", response),
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             }
@@ -122,7 +119,7 @@ async fn main() {
                         println!("You need to specify the path to the picture to upload");
                     } else {
                         let filepath = value.unwrap();
-                        match sv.set_profile_picture(current_session, filepath).await {
+                        match sv.set_profile_picture(filepath).await {
                             Ok(doc) => {
                                 println!("Profile picture updated successfully.\n{:?}", doc);
                             }
@@ -149,7 +146,7 @@ async fn main() {
                 },
                 None => {
                     // The full profile
-                    match sv.get_my_profile(current_session).await {
+                    match sv.get_my_profile().await {
                         Ok(profile) => println!("{}", profile),
                         Err(err) => println!(
                             "An error occurred while trying to get the profile.\n{}",

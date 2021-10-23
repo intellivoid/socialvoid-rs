@@ -13,6 +13,7 @@ pub struct Config {
     pub current_session: usize,
 }
 
+//document this function
 pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_key: &mut usize) {
     if let Err(err) = sv.load_sessions(&config.sessions_file) {
         if err.kind() == std::io::ErrorKind::NotFound {
@@ -30,14 +31,14 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
             .expect("Couldn't create a new session.");
     }
 
-    match sv.get_session(*sesh_key).await {
+    match sv.get_session().await {
         Ok(_) => {}
         Err(err) => match err {
             SocialvoidError::RawClient(err) => match err.kind {
                 ErrorKind::Authentication(AuthenticationError::SessionExpired)
                 | ErrorKind::Authentication(AuthenticationError::SessionNotFound) => {
                     println!("This session either didn't exist or is expired.\nDeleting it and creating a new one.");
-                    sv.delete_session(*sesh_key).await;
+                    sv.delete_session().unwrap();
                     let new_sesh_key = sv
                         .new_session()
                         .await
