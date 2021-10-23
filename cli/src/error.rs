@@ -44,6 +44,13 @@ socialvoid-cli logout",
                 ClientError::SerdeJson(err) => {
                     write!(f, "Error while parsing JSON.\n{:?}", err)
                 }
+                ClientError::SessionIndexOutOfBounds { session_count } => {
+                    write!(
+                        f,
+                        "SessionIndexOutOfBounds. Number of sessions is {}",
+                        session_count
+                    )
+                }
             },
         }
     }

@@ -108,6 +108,8 @@ impl Client {
         Ok(())
     }
 
+    /// Get another video
+
     /// Tries to establish another session adds it to the client if successful and returns the key of the session
     pub async fn new_session(&mut self) -> Result<usize, SocialvoidError> {
         let mut session = SessionHolder::new(self.client_info.clone());
@@ -134,6 +136,25 @@ impl Client {
             };
             Ok(self.sessions.remove(sesh_key))
         }
+    }
+
+    /// Set the current session to session_key if exists
+    pub fn set_current_session(&mut self, session_key: usize) -> Result<(), SocialvoidError> {
+        if self.sessions.len() > session_key {
+            self.current_session = Some(session_key);
+            Ok(())
+        } else {
+            Err(SocialvoidError::Client(
+                ClientError::SessionIndexOutOfBounds {
+                    session_count: self.sessions.len(),
+                },
+            ))
+        }
+    }
+
+    /// Get the current session key
+    pub fn get_current_session_key(&self) -> Option<usize> {
+        self.current_session.clone()
     }
 
     /// Gets a Session object for the current session

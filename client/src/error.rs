@@ -10,6 +10,9 @@ pub enum ClientError {
     /// Thrown when `current_session` is `None`, typically means there aren't any
     /// sessions and you should create one.
     NoSessionsExist,
+    /// Thrown when tried to access a session via index and it's out of bounds.
+    /// Also, returns the number of sessions that we have
+    SessionIndexOutOfBounds { session_count: usize },
     /// Errors thrown by serde json
     SerdeJson(serde_json::Error),
 }
