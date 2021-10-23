@@ -8,7 +8,7 @@ use crate::utils::*;
 use error::MyFriendlyError;
 
 // TODO: maybe try to remove ALL the expect calls and use only MyFriendlyError everywhere. + improve the MyFriendlyError
-
+// TODO: add signal handling? + support for windows?
 #[tokio::main]
 async fn main() {
     let args = Cli::from_args();
@@ -70,9 +70,18 @@ async fn main() {
                 }
             };
             //TODO: don't login if already logged in for a username???
+
             let username = prompt_stdin("New username: ");
-            let password = prompt_password("Enter password: ");
-            //TODO: validation and Maybe password strength check or sth ^^
+            let password = loop {
+                let password = prompt_password("Enter password: ");
+                let confirm_password = prompt_password("Enter password again: ");
+                if password == confirm_password {
+                    break password;
+                } else {
+                    //TODO: validation and Maybe password strength check or sth ^^
+                    println!("Password don't match. Please try again or Ctrl+C to quit.");
+                }
+            };
             let tos = sv
                 .get_terms_of_service()
                 .await

@@ -154,7 +154,7 @@ impl Client {
 
     /// Get the current session key
     pub fn get_current_session_key(&self) -> Option<usize> {
-        self.current_session.clone()
+        self.current_session
     }
 
     /// Gets a Session object for the current session
