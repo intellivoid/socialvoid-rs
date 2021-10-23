@@ -121,14 +121,15 @@ pub struct Profile {
 /// Relationship of a peer with another peer.
 /// https://github.com/intellivoid/Socialvoid-Standard-Documentation/blob/master/Types/RelationshipTypes.md
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RelationshipType {
-    NONE,
-    FOLLOWING,
-    FOLLOWS_YOU,
-    AWAITING_APPROVAL,
-    MUTUALLY_FOLLOWING,
-    BLOCKED,
-    BLOCKED_YOU,
+    None,
+    Following,
+    FollowsYou,
+    AwaitingApproval,
+    MutuallyFollowing,
+    Blocked,
+    BlockedYou,
 }
 
 impl std::fmt::Display for Profile {
