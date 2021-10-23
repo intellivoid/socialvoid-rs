@@ -14,29 +14,42 @@ Incase any method isn't available in this crate, you can make raw requests using
 
 A simple example that logs you in and shows peer information.
 ```rust
-use socialvoid::Client;
+// You need to make a file called `test_creds.test` in the root of the project for this example to run
+// The file is a JSON file with the following format
+// {
+//     "username":"yourusername",
+//     "password":"yourpassword"
+// }
 
-let mut client = new_with_defaults();
+#[tokio::main]
+async fn main() {
+    let creds: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())
+            .expect("Couldn't read the credentials. Check the JSON format or something");
 
-client
-    .authenticate_user(
-        creds["username"].as_str().unwrap().to_string(),
-        creds["password"].as_str().unwrap().to_string(),
-        None,
-    )
-    .await?;
+    let mut client = socialvoid::new_with_defaults().await.unwrap();
+    client
+        .authenticate_user(
+            creds["username"].as_str().unwrap().to_string(),
+            creds["password"].as_str().unwrap().to_string(),
+            None,
+        )
+        .await
+        .unwrap();
 
-let peer = client.get_me().await?;
-client.logout().await?;
+    let peer = client.get_me().await.unwrap();
 
-println!("{:?}", peer);
-assert_eq!(
-    peer.username,
-    creds["username"].as_str().unwrap().to_string()
-);
+    println!("{:?}", peer);
+    client.logout().await.unwrap();
+
+    assert_eq!(
+        peer.username,
+        creds["username"].as_str().unwrap().to_string()
+    );
+}
 
 ```
-More examples can be found in client/examples (TODO+add a link)
+More examples can be found in [client/examples](https://github.com/intellivoid/socialvoid-rs/tree/master/client/examples)
 
 ## Installation of the CLI client
 1. Clone this repository
