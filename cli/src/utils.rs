@@ -1,6 +1,7 @@
 use rpassword::read_password;
 use serde::{Deserialize, Serialize};
 use socialvoid as sv_client;
+use socialvoid::SocialvoidError;
 use socialvoid_rawclient::{AuthenticationError, ErrorKind};
 use std::io::{stdin, stdout, Write};
 
@@ -31,17 +32,25 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
 
     match sv.get_session(*sesh_key).await {
         Ok(_) => {}
-        Err(err) => match err.kind {
-            ErrorKind::Authentication(AuthenticationError::SessionExpired)
-            | ErrorKind::Authentication(AuthenticationError::SessionNotFound) => {
-                println!("This session either didn't exist or is expired.\nDeleting it and creating a new one.");
-                sv.delete_session(*sesh_key).await;
-                let new_sesh_key = sv
-                    .new_session()
-                    .await
-                    .expect("Couldn't create a new session.");
-                *sesh_key = new_sesh_key;
-            }
+        Err(err) => match err {
+            SocialvoidError::RawClient(err) => match err.kind {
+                ErrorKind::Authentication(AuthenticationError::SessionExpired)
+                | ErrorKind::Authentication(AuthenticationError::SessionNotFound) => {
+                    println!("This session either didn't exist or is expired.\nDeleting it and creating a new one.");
+                    sv.delete_session(*sesh_key).await;
+                    let new_sesh_key = sv
+                        .new_session()
+                        .await
+                        .expect("Couldn't create a new session.");
+                    *sesh_key = new_sesh_key;
+                }
+                _ => {
+                    panic!(
+                        "Couldn't `get` session. The session is probably corrupt.
+Either delete the sessions file or fix the corrupt session."
+                    );
+                }
+            },
             _ => {
                 panic!(
                     "Couldn't `get` session. The session is probably corrupt.

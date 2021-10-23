@@ -1,20 +1,22 @@
 pub mod account;
+pub mod error;
 pub mod help;
 pub mod network;
 pub mod session;
 
+pub use error::ClientError;
+pub use error::SocialvoidError;
 use session::ClientInfo;
 use session::RegisterRequest;
 use session::Session;
 use session::SessionHolder;
-use socialvoid_rawclient::Error;
 use socialvoid_types::Document;
 use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
 use socialvoid_types::Profile;
 
 /// Create a client and establish a new session
-pub async fn new_with_defaults() -> Result<Client, Error> {
+pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
     let rpc_client = socialvoid_rawclient::new();
     let cdn_client = make_cdn_client_from(&rpc_client).await?;
     let client_info = ClientInfo::generate();
@@ -33,7 +35,7 @@ pub async fn new_with_defaults() -> Result<Client, Error> {
 /// Creates the CDN client by resolving the host url from server information
 async fn make_cdn_client_from(
     rpc_client: &socialvoid_rawclient::Client,
-) -> Result<socialvoid_rawclient::CdnClient, Error> {
+) -> Result<socialvoid_rawclient::CdnClient, SocialvoidError> {
     let server_info = help::get_server_information(&rpc_client).await?;
 
     Ok(socialvoid_rawclient::CdnClient::with_cdn_url(
@@ -44,7 +46,10 @@ async fn make_cdn_client_from(
 /// Create a client with user defined client info and sessions
 /// And CDN as gven in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
-pub async fn new(client_info: ClientInfo, sessions: Vec<SessionHolder>) -> Result<Client, Error> {
+pub async fn new(
+    client_info: ClientInfo,
+    sessions: Vec<SessionHolder>,
+) -> Result<Client, SocialvoidError> {
     let rpc_client = socialvoid_rawclient::new();
     let cdn_client = make_cdn_client_from(&rpc_client).await?;
     Ok(Client {
@@ -76,7 +81,7 @@ pub struct Client {
 
 impl Client {
     /// Set the CDN server URL from the ServerInfomation
-    pub async fn reset_cdn_url(&mut self) -> Result<(), Error> {
+    pub async fn reset_cdn_url(&mut self) -> Result<(), SocialvoidError> {
         self.cdn_client = make_cdn_client_from(&self.rpc_client).await?;
         Ok(())
     }
@@ -96,7 +101,7 @@ impl Client {
     }
 
     /// Tries to establish another session adds it to the client if successful and returns the key of the session
-    pub async fn new_session(&mut self) -> Result<usize, Error> {
+    pub async fn new_session(&mut self) -> Result<usize, SocialvoidError> {
         let mut session = SessionHolder::new(self.client_info.clone());
         session.create(&self.rpc_client).await?;
         self.sessions.push(session);
@@ -110,13 +115,13 @@ impl Client {
     }
 
     /// Gets a Session object for a specific session
-    pub async fn get_session(&mut self, session_key: usize) -> Result<Session, Error> {
-        self.sessions[session_key].get(&self.rpc_client).await
+    pub async fn get_session(&mut self, session_key: usize) -> Result<Session, SocialvoidError> {
+        Ok(self.sessions[session_key].get(&self.rpc_client).await?)
     }
 
     /// Get terms of service
-    pub async fn get_terms_of_service(&self) -> Result<HelpDocument, Error> {
-        help::get_terms_of_service(&self.rpc_client).await
+    pub async fn get_terms_of_service(&self) -> Result<HelpDocument, SocialvoidError> {
+        Ok(help::get_terms_of_service(&self.rpc_client).await?)
     }
 
     /// Accept terms of service for a specific session
@@ -129,10 +134,10 @@ impl Client {
         &mut self,
         session_key: usize,
         req: RegisterRequest,
-    ) -> Result<Peer, Error> {
-        self.sessions[session_key]
+    ) -> Result<Peer, SocialvoidError> {
+        Ok(self.sessions[session_key]
             .register(req, &self.rpc_client)
-            .await
+            .await?)
     }
 
     /// Login to an account using a specific session
@@ -142,10 +147,10 @@ impl Client {
         username: String,
         password: String,
         otp: Option<String>,
-    ) -> Result<bool, Error> {
-        self.sessions[session_key]
+    ) -> Result<bool, SocialvoidError> {
+        Ok(self.sessions[session_key]
             .authenticate_user(&self.rpc_client, username, password, otp)
-            .await
+            .await?)
     }
 
     /// Check if a session is authenticated
@@ -154,32 +159,32 @@ impl Client {
     }
 
     /// Log out from a session. Maybe destroy the session??
-    pub async fn logout(&mut self, session_key: usize) -> Result<bool, Error> {
-        self.sessions[session_key].logout(&self.rpc_client).await
+    pub async fn logout(&mut self, session_key: usize) -> Result<bool, SocialvoidError> {
+        Ok(self.sessions[session_key].logout(&self.rpc_client).await?)
     }
 
-    pub async fn get_me(&self, session_key: usize) -> Result<Peer, Error> {
-        network::get_me(
+    pub async fn get_me(&self, session_key: usize) -> Result<Peer, SocialvoidError> {
+        Ok(network::get_me(
             &self.rpc_client,
             self.sessions[session_key].session_identification()?,
         )
-        .await
+        .await?)
     }
 
-    pub async fn get_my_profile(&self, session_key: usize) -> Result<Profile, Error> {
-        network::get_profile(
+    pub async fn get_my_profile(&self, session_key: usize) -> Result<Profile, SocialvoidError> {
+        Ok(network::get_profile(
             &self.rpc_client,
             self.sessions[session_key].session_identification()?,
             None,
         )
-        .await
+        .await?)
     }
 
     pub async fn set_profile_picture(
         &self,
         session_key: usize,
         filepath: String,
-    ) -> Result<Document, Error> {
+    ) -> Result<Document, SocialvoidError> {
         let sesh_id = self.sessions[session_key].session_identification()?;
         let document = self.cdn_client.upload(sesh_id.clone(), filepath).await?;
         account::set_profile_picture(&self.rpc_client, sesh_id, document.id.clone()).await?; //TODO: use result and send client error if false
@@ -192,7 +197,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), Error> {
+    async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), SocialvoidError> {
         // let sessions_file = "sessions.test";
 
         let creds: serde_json::Value =
