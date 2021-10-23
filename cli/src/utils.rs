@@ -31,6 +31,12 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
             .expect("Couldn't create a new session.");
     }
 
+    if sv.sessions.len() <= *sesh_key {
+        *sesh_key = sv.sessions.len() - 1;
+    }
+
+    sv.set_current_session(*sesh_key).unwrap();
+
     match sv.get_session().await {
         Ok(_) => {}
         Err(err) => match err {
@@ -43,6 +49,7 @@ pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_ke
                         .new_session()
                         .await
                         .expect("Couldn't create a new session.");
+                    sv.set_current_session(new_sesh_key).unwrap();
                     *sesh_key = new_sesh_key;
                 }
                 _ => {

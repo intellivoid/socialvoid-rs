@@ -16,7 +16,7 @@ async fn main() {
     let mut sv = sv_client::new_empty_client();
     sv.reset_cdn_url().await.unwrap(); //set proper CDN url
     let mut current_session: usize = std::env::var("SV_CURRENT_SESSION")
-        .unwrap_or_else(|_| "0".to_string())
+        .unwrap_or_else(|_| config.current_session.to_string())
         .parse()
         .expect("The environment variable should SV_CURRENT_SESSION should contain an integer >=0");
 
@@ -36,6 +36,7 @@ async fn main() {
                 current_session
             };
             current_session = sk;
+            sv.set_current_session(current_session).unwrap();
             let password = prompt_password("Enter password: ");
             //TODO: add OTP support
             match sv.authenticate_user(username, password, None).await {
@@ -57,6 +58,7 @@ async fn main() {
                     .new_session()
                     .await
                     .expect("Couldn't create a new session");
+                sv.set_current_session(current_session).unwrap();
             }
             let first_name = prompt_stdin("First name: ");
             let last_name = {
@@ -92,7 +94,7 @@ async fn main() {
                         })
                         .await
                     {
-                        Ok(peer) => println!("Registered.\n{:?}", peer),
+                        Ok(peer) => println!("Registered.\n{:#?}", peer),
                         Err(err) => println!("Couldn't register.\n{}", MyFriendlyError::from(err)),
                     }
                 } else {
@@ -107,7 +109,7 @@ async fn main() {
             setup_sessions(&config, &mut sv, &mut current_session).await;
 
             match sv.get_me().await {
-                Ok(response) => println!("{:?}", response),
+                Ok(response) => println!("{:#?}", response),
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             }
         }
