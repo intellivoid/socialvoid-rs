@@ -103,6 +103,13 @@ pub struct ServerInformation {
     pub upload_max_file_size: u32,
     pub unauthorized_session_ttl: u32,
     pub authorized_session_ttl: u32,
+    pub retrieve_likes_max_limit: u32,
+    pub retrieve_reposts_max_limit: u32,
+    pub retrieve_replies_max_limit: u32,
+    pub retrieve_quotes_max_limit: u32,
+    pub retrieve_followers_max_limit: u32,
+    pub retrieve_following_max_limit: u32,
+    pub retrieve_feed_max_limit: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
