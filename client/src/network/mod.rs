@@ -75,6 +75,23 @@ pub async fn unfollow_peer(
         .await
 }
 
+/// FollowPeer
+pub async fn follow_peer(
+    client: &rawclient::Client,
+    session_identification: SessionIdentification,
+    peer: String,
+) -> Result<RelationshipType, Error> {
+    client
+        .send_request(
+            "network.follow_peer",
+            json!({
+                "session_identification": serde_json::to_value(session_identification)?,
+                "peer": peer,
+            }),
+        )
+        .await
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
