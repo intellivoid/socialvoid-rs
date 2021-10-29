@@ -139,6 +139,42 @@ pub enum RelationshipType {
     BlockedYou,
 }
 
+/// Post
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Post {
+    id: String,
+    #[serde(rename = "type")]
+    post_type: PostType,
+    peer: Option<Peer>,
+    source: Option<String>,
+    text: Option<String>,
+    attachments: Vec<Document>,
+    entities: Vec<TextEntity>,
+    mentioned_peers: Vec<Peer>,
+    reply_to_post: Option<Box<Post>>,
+    quoted_post: Option<Box<Post>>,
+    reposted_post: Option<Box<Post>>,
+    original_thread_post: Option<Box<Post>>,
+    like_count: Option<usize>,
+    repost_count: Option<usize>,
+    quote_count: Option<usize>,
+    reply_count: Option<usize>,
+    posted_timestamp: u32,
+    flags: Vec<String>,
+}
+
+/// Post Type
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PostType {
+    Unknown,
+    Deleted,
+    Post,
+    Reply,
+    Quote,
+    Repost,
+}
+
 impl std::fmt::Display for Profile {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(

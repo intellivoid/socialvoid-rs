@@ -3,6 +3,7 @@ pub mod error;
 pub mod help;
 pub mod network;
 pub mod session;
+pub mod timeline;
 
 pub use error::ClientError;
 pub use error::SocialvoidError;
