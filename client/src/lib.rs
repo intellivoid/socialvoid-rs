@@ -14,6 +14,7 @@ use session::SessionHolder;
 use socialvoid_types::Document;
 use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
+use socialvoid_types::Post;
 use socialvoid_types::Profile;
 
 /// Create a client and establish a new session
@@ -265,18 +266,64 @@ impl Client {
             None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
         }
     }
+
+    /// Compose a new post to put on the timeline
+    /// text: The text contents of the post to compose
+    /// attachments: A vector of Document IDs to attach to the post
+    pub async fn compose_post(
+        &self,
+        text: String,
+        attachments: Vec<String>,
+    ) -> Result<Post, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                let sesh_id = self.sessions[session_key].session_identification()?;
+                Ok(timeline::compose(&self.rpc_client, sesh_id, text, attachments).await?)
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
+    }
+
+    /// Delete your post to from the timeline
+    /// post: ID of the post you want to delete
+    pub async fn delete_post(&self, post: String) -> Result<bool, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                let sesh_id = self.sessions[session_key].session_identification()?;
+                Ok(timeline::delete(&self.rpc_client, sesh_id, post).await?)
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
+    }
+
+    /// Retrieve the posts from the authenticated users timeline
+    /// post: ID of the post you want to delete
+    pub async fn retrieve_feed_max(&self) -> Result<Vec<Post>, SocialvoidError> {
+        match self.current_session {
+            Some(session_key) => {
+                let sesh_id = self.sessions[session_key].session_identification()?;
+                let page = Some(10); //TODO:GET THIS FROM server information which will be cached or smn
+                Ok(timeline::retrieve_feed(&self.rpc_client, sesh_id, page).await?)
+            }
+            None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::distributions::Alphanumeric;
+    use rand::{thread_rng, Rng};
+
+    const CREDS_FILE_1: &str = "test_creds.test";
 
     #[tokio::test]
     async fn it_should_log_in_and_get_the_correct_peer() -> Result<(), SocialvoidError> {
         // let sessions_file = "sessions.test";
 
         let creds: serde_json::Value =
-            serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())?;
+            serde_json::from_str(&std::fs::read_to_string(CREDS_FILE_1).unwrap())?;
 
         let mut client = new_with_defaults().await?;
         client
@@ -296,6 +343,31 @@ mod tests {
             creds["username"].as_str().unwrap().to_string()
         );
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn it_should_create_post_and_delete_it() -> Result<(), SocialvoidError> {
+        let creds: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(CREDS_FILE_1).unwrap())?;
+        let mut client = new_with_defaults().await?;
+        client
+            .authenticate_user(
+                creds["username"].as_str().unwrap().to_string(),
+                creds["password"].as_str().unwrap().to_string(),
+                None,
+            )
+            .await?;
+
+        let post_text = thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(30)
+            .map(char::from)
+            .collect();
+        let post = client.compose_post(post_text, Vec::new()).await?;
+        if !client.delete_post(post.id).await? {
+            panic!("Delete post returned false unexpectedly.")
+        }
         Ok(())
     }
 }
