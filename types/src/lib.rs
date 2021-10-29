@@ -142,25 +142,25 @@ pub enum RelationshipType {
 /// Post
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Post {
-    id: String,
+    pub id: String,
     #[serde(rename = "type")]
-    post_type: PostType,
-    peer: Option<Peer>,
-    source: Option<String>,
-    text: Option<String>,
-    attachments: Vec<Document>,
-    entities: Vec<TextEntity>,
-    mentioned_peers: Vec<Peer>,
-    reply_to_post: Option<Box<Post>>,
-    quoted_post: Option<Box<Post>>,
-    reposted_post: Option<Box<Post>>,
-    original_thread_post: Option<Box<Post>>,
-    like_count: Option<usize>,
-    repost_count: Option<usize>,
-    quote_count: Option<usize>,
-    reply_count: Option<usize>,
-    posted_timestamp: u32,
-    flags: Vec<String>,
+    pub post_type: PostType,
+    pub peer: Option<Peer>,
+    pub source: Option<String>,
+    pub text: Option<String>,
+    pub attachments: Vec<Document>,
+    pub entities: Vec<TextEntity>,
+    pub mentioned_peers: Vec<Peer>,
+    pub reply_to_post: Option<Box<Post>>,
+    pub quoted_post: Option<Box<Post>>,
+    pub reposted_post: Option<Box<Post>>,
+    pub original_thread_post: Option<Box<Post>>,
+    pub like_count: Option<usize>,
+    pub repost_count: Option<usize>,
+    pub quote_count: Option<usize>,
+    pub reply_count: Option<usize>,
+    pub posted_timestamp: u32,
+    pub flags: Vec<String>,
 }
 
 /// Post Type
