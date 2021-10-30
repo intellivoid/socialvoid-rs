@@ -272,13 +272,16 @@ impl Client {
     /// attachments: A vector of Document IDs to attach to the post
     pub async fn compose_post(
         &self,
-        text: String,
+        text: &str,
         attachments: Vec<String>,
     ) -> Result<Post, SocialvoidError> {
         match self.current_session {
             Some(session_key) => {
                 let sesh_id = self.sessions[session_key].session_identification()?;
-                Ok(timeline::compose(&self.rpc_client, sesh_id, text, attachments).await?)
+                Ok(
+                    timeline::compose(&self.rpc_client, sesh_id, text.to_string(), attachments)
+                        .await?,
+                )
             }
             None => Err(SocialvoidError::Client(ClientError::NoSessionsExist)),
         }
