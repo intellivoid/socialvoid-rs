@@ -366,8 +366,8 @@ mod tests {
             .sample_iter(&Alphanumeric)
             .take(30)
             .map(char::from)
-            .collect();
-        let post = client.compose_post(post_text, Vec::new()).await?;
+            .collect::<String>();
+        let post = client.compose_post(&post_text, Vec::new()).await?;
         if !client.delete_post(post.id).await? {
             panic!("Delete post returned false unexpectedly.")
         }
