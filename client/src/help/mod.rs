@@ -1,14 +1,14 @@
 use serde_json::json;
 use socialvoid_rawclient::Error;
 use socialvoid_types::{HelpDocument, ServerInformation};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct SVHelpMethods {
-    client: Rc<socialvoid_rawclient::Client>,
+    client: Arc<socialvoid_rawclient::Client>,
 }
 
 impl SVHelpMethods {
-    pub fn new(client: Rc<socialvoid_rawclient::Client>) -> SVHelpMethods {
+    pub fn new(client: Arc<socialvoid_rawclient::Client>) -> SVHelpMethods {
         SVHelpMethods { client }
     }
 
@@ -43,7 +43,7 @@ mod tests {
     pub async fn save_all_documents() {
         use std::fs::File;
         let client = socialvoid_rawclient::new();
-        let help = SVHelpMethods::new(Rc::new(client));
+        let help = SVHelpMethods::new(Arc::new(client));
         serde_json::to_writer(
             &File::create("community_guidelines.json.test").unwrap(),
             &help.get_community_guidelines().await.unwrap(),

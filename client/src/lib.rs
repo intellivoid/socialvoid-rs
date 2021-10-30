@@ -17,17 +17,17 @@ use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
 use socialvoid_types::Post;
 use socialvoid_types::Profile;
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
-    let rpc_client = Rc::new(socialvoid_rawclient::new());
-    let cdn_client = make_cdn_client_from(Rc::clone(&rpc_client)).await?;
+    let rpc_client = Arc::new(socialvoid_rawclient::new());
+    let cdn_client = make_cdn_client_from(Arc::clone(&rpc_client)).await?;
     let client_info = ClientInfo::generate();
     let mut session = SessionHolder::new(client_info.clone());
     session.create(&rpc_client).await?;
     let sessions = vec![session];
-    let (help) = init_methods(Rc::clone(&rpc_client));
+    let (help) = init_methods(Arc::clone(&rpc_client));
 
     let client = Client {
         current_session: Some(0),
@@ -41,15 +41,15 @@ pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
     Ok(client)
 }
 
-pub fn init_methods(client: Rc<socialvoid_rawclient::Client>) -> (SVHelpMethods) {
+pub fn init_methods(client: Arc<socialvoid_rawclient::Client>) -> (SVHelpMethods) {
     (SVHelpMethods::new(client))
 }
 
 /// Creates the CDN client by resolving the host url from server information
 async fn make_cdn_client_from(
-    rpc_client: Rc<socialvoid_rawclient::Client>,
+    rpc_client: Arc<socialvoid_rawclient::Client>,
 ) -> Result<socialvoid_rawclient::CdnClient, SocialvoidError> {
-    let server_info = SVHelpMethods::new(Rc::clone(&rpc_client))
+    let server_info = SVHelpMethods::new(Arc::clone(&rpc_client))
         .get_server_information()
         .await?;
 
@@ -65,10 +65,10 @@ pub async fn new(
     client_info: ClientInfo,
     sessions: Vec<SessionHolder>,
 ) -> Result<Client, SocialvoidError> {
-    let rpc_client = Rc::new(socialvoid_rawclient::new());
-    let cdn_client = make_cdn_client_from(Rc::clone(&rpc_client)).await?;
+    let rpc_client = Arc::new(socialvoid_rawclient::new());
+    let cdn_client = make_cdn_client_from(Arc::clone(&rpc_client)).await?;
     let current_session = if sessions.is_empty() { None } else { Some(0) };
-    let (help) = init_methods(Rc::clone(&rpc_client));
+    let (help) = init_methods(Arc::clone(&rpc_client));
     Ok(Client {
         current_session,
         sessions,
@@ -82,8 +82,8 @@ pub async fn new(
 /// Create a client with generated client info and zero sessions
 /// Note that, cdn client may not be the one taken from server information
 pub fn new_empty_client() -> Client {
-    let rpc_client = Rc::new(socialvoid_rawclient::new());
-    let (help) = init_methods(Rc::clone(&rpc_client));
+    let rpc_client = Arc::new(socialvoid_rawclient::new());
+    let (help) = init_methods(Arc::clone(&rpc_client));
     Client {
         current_session: None,
         sessions: Vec::new(),
@@ -106,10 +106,10 @@ pub struct Client {
 
 impl Client {
     /// Set the CDN server URL from the ServerInfomation
-    // pub async fn reset_cdn_url(&mut self) -> Result<(), SocialvoidError> {
-    //     self.cdn_client = make_cdn_client_from(&self.rpc_client).await?;
-    //     Ok(())
-    // }
+    pub async fn reset_cdn_url(&mut self) -> Result<(), SocialvoidError> {
+        self.cdn_client = make_cdn_client_from(Arc::new(socialvoid_rawclient::new())).await?; //todo: fix
+        Ok(())
+    }
 
     /// Saves all your sessions to a file
     pub fn save_sessions(&self, filename: &str) -> Result<(), std::io::Error> {
