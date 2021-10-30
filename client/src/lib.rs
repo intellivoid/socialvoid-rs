@@ -7,6 +7,7 @@ pub mod timeline;
 
 pub use error::ClientError;
 pub use error::SocialvoidError;
+use help::SVHelpMethods;
 use session::ClientInfo;
 use session::RegisterRequest;
 use session::Session;
@@ -16,30 +17,41 @@ use socialvoid_types::HelpDocument;
 use socialvoid_types::Peer;
 use socialvoid_types::Post;
 use socialvoid_types::Profile;
+use std::rc::Rc;
 
 /// Create a client and establish a new session
 pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
-    let rpc_client = socialvoid_rawclient::new();
-    let cdn_client = make_cdn_client_from(&rpc_client).await?;
+    let rpc_client = Rc::new(socialvoid_rawclient::new());
+    let cdn_client = make_cdn_client_from(Rc::clone(&rpc_client)).await?;
     let client_info = ClientInfo::generate();
     let mut session = SessionHolder::new(client_info.clone());
     session.create(&rpc_client).await?;
     let sessions = vec![session];
+    let (help) = init_methods(Rc::clone(&rpc_client));
 
-    Ok(Client {
+    let client = Client {
         current_session: Some(0),
         sessions,
         client_info,
-        rpc_client,
+        rpc_client: socialvoid_rawclient::new(), //temporary,.. TODO: remove this
+        // rpc_client: &rpc_client,
         cdn_client,
-    })
+        help,
+    };
+    Ok(client)
+}
+
+pub fn init_methods(client: Rc<socialvoid_rawclient::Client>) -> (SVHelpMethods) {
+    (SVHelpMethods::new(client))
 }
 
 /// Creates the CDN client by resolving the host url from server information
 async fn make_cdn_client_from(
-    rpc_client: &socialvoid_rawclient::Client,
+    rpc_client: Rc<socialvoid_rawclient::Client>,
 ) -> Result<socialvoid_rawclient::CdnClient, SocialvoidError> {
-    let server_info = help::get_server_information(rpc_client).await?;
+    let server_info = SVHelpMethods::new(Rc::clone(&rpc_client))
+        .get_server_information()
+        .await?;
 
     Ok(socialvoid_rawclient::CdnClient::with_cdn_url(
         server_info.cdn_server,
@@ -53,27 +65,32 @@ pub async fn new(
     client_info: ClientInfo,
     sessions: Vec<SessionHolder>,
 ) -> Result<Client, SocialvoidError> {
-    let rpc_client = socialvoid_rawclient::new();
-    let cdn_client = make_cdn_client_from(&rpc_client).await?;
+    let rpc_client = Rc::new(socialvoid_rawclient::new());
+    let cdn_client = make_cdn_client_from(Rc::clone(&rpc_client)).await?;
     let current_session = if sessions.is_empty() { None } else { Some(0) };
+    let (help) = init_methods(Rc::clone(&rpc_client));
     Ok(Client {
         current_session,
         sessions,
         client_info,
-        rpc_client,
+        rpc_client: socialvoid_rawclient::new(),
         cdn_client,
+        help,
     })
 }
 
 /// Create a client with generated client info and zero sessions
 /// Note that, cdn client may not be the one taken from server information
 pub fn new_empty_client() -> Client {
+    let rpc_client = Rc::new(socialvoid_rawclient::new());
+    let (help) = init_methods(Rc::clone(&rpc_client));
     Client {
         current_session: None,
         sessions: Vec::new(),
         client_info: ClientInfo::generate(),
         rpc_client: socialvoid_rawclient::new(),
         cdn_client: socialvoid_rawclient::CdnClient::new(),
+        help,
     }
 }
 
@@ -84,14 +101,15 @@ pub struct Client {
     client_info: ClientInfo,
     rpc_client: socialvoid_rawclient::Client,
     cdn_client: socialvoid_rawclient::CdnClient,
+    pub help: SVHelpMethods,
 }
 
 impl Client {
     /// Set the CDN server URL from the ServerInfomation
-    pub async fn reset_cdn_url(&mut self) -> Result<(), SocialvoidError> {
-        self.cdn_client = make_cdn_client_from(&self.rpc_client).await?;
-        Ok(())
-    }
+    // pub async fn reset_cdn_url(&mut self) -> Result<(), SocialvoidError> {
+    //     self.cdn_client = make_cdn_client_from(&self.rpc_client).await?;
+    //     Ok(())
+    // }
 
     /// Saves all your sessions to a file
     pub fn save_sessions(&self, filename: &str) -> Result<(), std::io::Error> {
@@ -169,7 +187,7 @@ impl Client {
 
     /// Get terms of service
     pub async fn get_terms_of_service(&self) -> Result<HelpDocument, SocialvoidError> {
-        Ok(help::get_terms_of_service(&self.rpc_client).await?)
+        Ok(self.help.get_terms_of_service().await?)
     }
 
     /// Accept terms of service for the current session
