@@ -18,8 +18,7 @@ pub struct SessionEstablished {
     pub challenge: String,
 }
 
-//TODO: maybe do serde thing
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SessionHolder {
     pub established: Option<SessionEstablished>,
     pub authenticated: bool,
@@ -35,6 +34,14 @@ impl SessionHolder {
             tos_read: None,
             authenticated: false,
         }
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        bincode::serialize(&self).unwrap()
+    }
+
+    pub fn deserialize(bytes: Vec<u8>) -> Self {
+        bincode::deserialize(&bytes).unwrap()
     }
 }
 
