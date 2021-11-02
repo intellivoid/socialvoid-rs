@@ -13,8 +13,8 @@ async fn main() {
         serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())
             .expect("Couldn't read the credentials. Check the JSON format or something");
 
-    let mut client = socialvoid::new_with_defaults().await.unwrap();
-    client
+    let sv = socialvoid::new_with_defaults().await.unwrap();
+    sv.session
         .authenticate_user(
             creds["username"].as_str().unwrap().to_string(),
             creds["password"].as_str().unwrap().to_string(),
@@ -23,10 +23,10 @@ async fn main() {
         .await
         .unwrap();
 
-    let peer = client.get_me().await.unwrap();
+    let peer = sv.network.get_me().await.unwrap();
 
     println!("{:?}", peer);
-    client.logout().await.unwrap();
+    sv.session.logout().await.unwrap();
 
     assert_eq!(
         peer.username,

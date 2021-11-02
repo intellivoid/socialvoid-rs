@@ -3,6 +3,5 @@ members = [
 	"client",
 	"types",
 	"rawclient",
-	"jsonrpc2-client",
-	"cli"
+	"jsonrpc2-client"
 ]
