@@ -198,7 +198,7 @@ mod tests {
     use socialvoid_rawclient::{ClientError, Error, ErrorKind};
     #[tokio::test]
     async fn it_should_establish_a_session_and_get_it() -> Result<(), Error> {
-        let mut session = SVSessionMethods::new(
+        let session = SVSessionMethods::new(
             Arc::new(socialvoid_rawclient::new()),
             Arc::new(socialvoid_rawclient::CdnClient::new()),
             Arc::new(Mutex::new(SessionHolder::new(Arc::new(
@@ -216,7 +216,7 @@ mod tests {
     async fn it_should_establish_a_session_and_upload_and_download_a_file() -> Result<(), Error> {
         let creds: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string("../client/test_creds.test").unwrap())?;
-        let mut session = SVSessionMethods::new(
+        let session = SVSessionMethods::new(
             Arc::new(socialvoid_rawclient::new()),
             Arc::new(socialvoid_rawclient::CdnClient::new()),
             Arc::new(Mutex::new(SessionHolder::new(Arc::new(
@@ -270,7 +270,7 @@ mod tests {
 
     #[tokio::test]
     async fn it_should_throw_a_terms_of_service_not_agreed_error() -> Result<(), Error> {
-        let mut session = SVSessionMethods::new(
+        let session = SVSessionMethods::new(
             Arc::new(socialvoid_rawclient::new()),
             Arc::new(socialvoid_rawclient::CdnClient::new()),
             Arc::new(Mutex::new(SessionHolder::new(Arc::new(
@@ -310,7 +310,7 @@ mod tests {
 
         let client_info = ClientInfo::generate();
         let private_hash = client_info.private_hash.clone();
-        let mut session = SVSessionMethods::new(
+        let session = SVSessionMethods::new(
             Arc::new(socialvoid_rawclient::new()),
             Arc::new(socialvoid_rawclient::CdnClient::new()),
             Arc::new(Mutex::new(SessionHolder::new(Arc::new(
@@ -318,7 +318,8 @@ mod tests {
             )))),
         );
         session.create().await.expect("Couldn't create the session");
-        let established = session.session.lock().unwrap().established.unwrap();
+        let established = session.session.lock().unwrap();
+        let established = established.established.as_ref().unwrap();
         let challenge_answer =
             answer_challenge(private_hash.clone(), established.challenge.clone());
 

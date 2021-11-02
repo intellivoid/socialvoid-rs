@@ -13,8 +13,8 @@ pub struct SVNetworkMethods {
 }
 
 impl SVNetworkMethods {
-    pub fn new(client: Arc<rawclient::Client>, session: Arc<SVSessionMethods>) -> SVNetworkMethods {
-        SVNetworkMethods { client, session }
+    pub fn new(client: Arc<rawclient::Client>, session: Arc<SVSessionMethods>) -> Self {
+        Self { client, session }
     }
 
     /// GetMe

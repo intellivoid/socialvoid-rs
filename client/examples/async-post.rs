@@ -9,27 +9,26 @@
 
 #[tokio::main]
 async fn main() {
-    // WIP
-    // let creds1: serde_json::Value =
-    //     serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())
-    //         .expect("Couldn't read the credentials. Check the JSON format or something");
+    let creds1: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())
+            .expect("Couldn't read the credentials. Check the JSON format or something");
 
-    // let mut sv = socialvoid::new_with_defaults().await.unwrap();
-    // sv
-    //     .authenticate_user(
-    //         creds1["username"].as_str().unwrap().to_string(),
-    //         creds1["password"].as_str().unwrap().to_string(),
-    //         None,
-    //     )
-    //     .await
-    //     .unwrap();
+    let sv = socialvoid::new_with_defaults().await.unwrap();
+    sv.session
+        .authenticate_user(
+            creds1["username"].as_str().unwrap().to_string(),
+            creds1["password"].as_str().unwrap().to_string(),
+            None,
+        )
+        .await
+        .unwrap();
 
-    // let handle = tokio::spawn(async move {
-    //     let post = sv.compose_post("Yayaya", vec![]).await.unwrap();
-    //     println!("Made post!");
-    //     if sv.delete_post(post.id).await.unwrap() {
-    //         println!("Deleted successfully!");
-    //     }
-    // });
-    // handle.await.unwrap();
+    let handle = tokio::spawn(async move {
+        let post = sv.timeline.compose("Yayaya", vec![]).await.unwrap();
+        println!("Made post!");
+        if sv.timeline.delete(post.id).await.unwrap() {
+            println!("Deleted successfully!");
+        }
+    });
+    handle.await.unwrap();
 }

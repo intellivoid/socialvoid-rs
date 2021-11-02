@@ -11,27 +11,19 @@ pub use error::SocialvoidError;
 use help::SVHelpMethods;
 use network::SVNetworkMethods;
 use session::ClientInfo;
-use session::RegisterRequest;
 use session::SVSessionMethods;
-use session::Session;
 use session::SessionHolder;
-use socialvoid_types::Document;
-use socialvoid_types::HelpDocument;
-use socialvoid_types::Peer;
-use socialvoid_types::Post;
-use socialvoid_types::Profile;
 use std::sync::{Arc, Mutex};
+use timeline::SVTimelineMethods;
 
 /// A client that can be used to call methods and manage sessions for Social Void
 pub struct Client {
-    client_info: Arc<ClientInfo>,
-    session_holder: Arc<Mutex<SessionHolder>>,
-    rpc_client: Arc<socialvoid_rawclient::Client>,
     cdn_client: Arc<socialvoid_rawclient::CdnClient>,
     pub help: Arc<SVHelpMethods>,
     pub session: Arc<SVSessionMethods>,
     pub network: Arc<SVNetworkMethods>,
     pub account: Arc<SVAccountMethods>,
+    pub timeline: Arc<SVTimelineMethods>,
 }
 
 /// Create a client and establish a new session
@@ -40,7 +32,7 @@ pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
     let cdn_client = Arc::new(make_cdn_client_from(Arc::clone(&rpc_client)).await?);
     let client_info = Arc::new(ClientInfo::generate());
     let session_holder = Arc::new(Mutex::new(SessionHolder::new(Arc::clone(&client_info))));
-    let (session, network, account, help) = init_methods(
+    let (session, network, account, timeline, help) = init_methods(
         Arc::clone(&rpc_client),
         Arc::clone(&cdn_client),
         Arc::clone(&session_holder),
@@ -48,14 +40,12 @@ pub async fn new_with_defaults() -> Result<Client, SocialvoidError> {
 
     session.create().await?;
     let client = Client {
-        client_info,
-        session_holder,
-        rpc_client,
         cdn_client,
         help,
         network,
         session,
         account,
+        timeline,
     };
     Ok(client)
 }
@@ -73,28 +63,23 @@ async fn make_cdn_client_from(
     ))
 }
 
-/// Create a client with user defined client info and session
+/// Create a client with user defined session
 /// And CDN as gven in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
-pub async fn new(
-    client_info: ClientInfo,
-    session: SessionHolder,
-) -> Result<Client, SocialvoidError> {
+pub async fn new(session: SessionHolder) -> Result<Client, SocialvoidError> {
     let rpc_client = Arc::new(socialvoid_rawclient::new());
     let cdn_client = Arc::new(make_cdn_client_from(Arc::clone(&rpc_client)).await?);
     let session_holder = Arc::new(Mutex::new(session));
-    let (session, network, account, help) = init_methods(
+    let (session, network, account, timeline, help) = init_methods(
         Arc::clone(&rpc_client),
         Arc::clone(&cdn_client),
         Arc::clone(&session_holder),
     );
     Ok(Client {
         session,
-        session_holder,
-        client_info: Arc::new(client_info),
-        rpc_client,
         cdn_client,
         help,
+        timeline,
         network,
         account,
     })
@@ -106,17 +91,15 @@ pub fn new_empty_client() -> Client {
     let rpc_client = Arc::new(socialvoid_rawclient::new());
     let client_info = Arc::new(ClientInfo::generate());
     let session_holder = Arc::new(Mutex::new(SessionHolder::new(Arc::clone(&client_info))));
-    let (session, network, account, help) = init_methods(
+    let (session, network, account, timeline, help) = init_methods(
         Arc::clone(&rpc_client),
         Arc::new(socialvoid_rawclient::CdnClient::new()),
         Arc::clone(&session_holder),
     );
     Client {
-        client_info,
-        session_holder,
-        rpc_client,
         cdn_client: Arc::new(socialvoid_rawclient::CdnClient::new()),
         help,
+        timeline,
         network,
         session,
         account,
@@ -131,6 +114,7 @@ pub fn init_methods(
     Arc<SVSessionMethods>,
     Arc<SVNetworkMethods>,
     Arc<SVAccountMethods>,
+    Arc<SVTimelineMethods>,
     Arc<SVHelpMethods>,
 ) {
     let session = Arc::new(SVSessionMethods::new(
@@ -145,7 +129,11 @@ pub fn init_methods(
             Arc::clone(&session),
         )),
         Arc::new(SVAccountMethods::new(Arc::clone(&client))),
-        Arc::new(SVHelpMethods::new(client)),
+        Arc::new(SVTimelineMethods::new(
+            Arc::clone(&client),
+            Arc::clone(&session),
+        )),
+        Arc::new(SVHelpMethods::new(Arc::clone(&client))),
     )
 }
 
@@ -173,7 +161,7 @@ mod tests {
         let creds: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(CREDS_FILE_1).unwrap())?;
 
-        let mut sv = new_with_defaults().await?;
+        let sv = new_with_defaults().await?;
         sv.session
             .authenticate_user(
                 creds["username"].as_str().unwrap().to_string(),
@@ -194,28 +182,28 @@ mod tests {
         Ok(())
     }
 
-    // #[tokio::test]
-    // async fn it_should_create_post_and_delete_it() -> Result<(), SocialvoidError> {
-    //     let creds: serde_json::Value =
-    //         serde_json::from_str(&std::fs::read_to_string(CREDS_FILE_1).unwrap())?;
-    //     let mut sv = new_with_defaults().await?;
-    //     sv.session
-    //         .authenticate_user(
-    //             creds["username"].as_str().unwrap().to_string(),
-    //             creds["password"].as_str().unwrap().to_string(),
-    //             None,
-    //         )
-    //         .await?;
+    #[tokio::test]
+    async fn it_should_create_post_and_delete_it() -> Result<(), SocialvoidError> {
+        let creds: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(CREDS_FILE_1).unwrap())?;
+        let sv = new_with_defaults().await?;
+        sv.session
+            .authenticate_user(
+                creds["username"].as_str().unwrap().to_string(),
+                creds["password"].as_str().unwrap().to_string(),
+                None,
+            )
+            .await?;
 
-    //     let post_text = thread_rng()
-    //         .sample_iter(&Alphanumeric)
-    //         .take(30)
-    //         .map(char::from)
-    //         .collect::<String>();
-    //     let post = client.compose_post(&post_text, Vec::new()).await?;
-    //     if !client.delete_post(post.id).await? {
-    //         panic!("Delete post returned false unexpectedly.")
-    //     }
-    //     Ok(())
-    // }
+        let post_text = thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(30)
+            .map(char::from)
+            .collect::<String>();
+        let post = sv.timeline.compose(&post_text, Vec::new()).await?;
+        if !sv.timeline.delete(post.id).await? {
+            panic!("Delete post returned false unexpectedly.")
+        }
+        Ok(())
+    }
 }
