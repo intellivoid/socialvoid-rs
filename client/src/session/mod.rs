@@ -38,6 +38,10 @@ impl SVSessionMethods {
         }
     }
 
+    pub fn serialize(&self) -> Vec<u8> {
+        self.session.lock().unwrap().serialize()
+    }
+
     /// `session.create`
     /// Creates a session and sets a session established object which contains a challenge.
     /// A session object is not yet returned - the challenge needs to be solved and sent inside a session identification
