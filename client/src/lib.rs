@@ -128,7 +128,10 @@ pub fn init_methods(
             Arc::clone(&client),
             Arc::clone(&session),
         )),
-        Arc::new(SVAccountMethods::new(Arc::clone(&client))),
+        Arc::new(SVAccountMethods::new(
+            Arc::clone(&client),
+            Arc::clone(&session),
+        )),
         Arc::new(SVTimelineMethods::new(
             Arc::clone(&client),
             Arc::clone(&session),
