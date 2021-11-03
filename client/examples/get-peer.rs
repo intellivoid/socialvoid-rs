@@ -14,12 +14,10 @@ async fn main() {
             .expect("Couldn't read the credentials. Check the JSON format or something");
 
     let sv = socialvoid::new_with_defaults().await.unwrap();
+    let username = creds["username"].as_str().unwrap().to_string();
+    let password = creds["password"].as_str().unwrap().to_string();
     sv.session
-        .authenticate_user(
-            creds["username"].as_str().unwrap().to_string(),
-            creds["password"].as_str().unwrap().to_string(),
-            None,
-        )
+        .authenticate_user(username, password, None)
         .await
         .unwrap();
 
@@ -28,8 +26,5 @@ async fn main() {
     println!("{:?}", peer);
     sv.session.logout().await.unwrap();
 
-    assert_eq!(
-        peer.username,
-        creds["username"].as_str().unwrap().to_string()
-    );
+    assert_eq!(peer.username, username);
 }

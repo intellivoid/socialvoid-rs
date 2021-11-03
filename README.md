@@ -8,13 +8,18 @@ This repository contains
 
 //TODO: link to this crate's documentation once it's up.
 
+Most of the methods are `async`  
+Methods can be accessed as `<namespace>.<methodname>`  
+For example, to invoke the `authenticate_user` method in `session` namespace, you can use `sv.session.authenticate_user(...)`.  
+
 Incase any method isn't available in this crate, you can make raw requests using the `socialvoid-rawclient` crate, the latest full API Documentation of Socialvoid is [here](https://github.com/intellivoid/Socialvoid-Standard-Documentation)
 
 ## Example for the library
 
 A simple example that logs you in and shows peer information.
 ```rust
-// You need to make a file called `test_creds.test` in the root of the project for this example to run
+// You need to make a file called `test_creds.test` in the root of the project for
+// this example to run.
 // The file is a JSON file with the following format
 // {
 //     "username":"yourusername",
@@ -27,25 +32,20 @@ async fn main() {
         serde_json::from_str(&std::fs::read_to_string("test_creds.test").unwrap())
             .expect("Couldn't read the credentials. Check the JSON format or something");
 
-    let mut client = socialvoid::new_with_defaults().await.unwrap();
-    client
-        .authenticate_user(
-            creds["username"].as_str().unwrap().to_string(),
-            creds["password"].as_str().unwrap().to_string(),
-            None,
-        )
+    let sv = socialvoid::new_with_defaults().await.unwrap();
+    let username = creds["username"].as_str().unwrap().to_string();
+    let password = creds["password"].as_str().unwrap().to_string();
+    sv.session
+        .authenticate_user(username, password, None)
         .await
         .unwrap();
 
-    let peer = client.get_me().await.unwrap();
+    let peer = sv.network.get_me().await.unwrap();
 
     println!("{:?}", peer);
-    client.logout().await.unwrap();
+    sv.session.logout().await.unwrap();
 
-    assert_eq!(
-        peer.username,
-        creds["username"].as_str().unwrap().to_string()
-    );
+    assert_eq!(peer.username, username);
 }
 
 ```
