@@ -1,72 +1,12 @@
 use rpassword::read_password;
 use serde::{Deserialize, Serialize};
-use socialvoid as sv_client;
-use socialvoid::SocialvoidError;
-use socialvoid_rawclient::{AuthenticationError, ErrorKind};
 use std::io::{stdin, stdout, Write};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
-    pub sessions_file: String,
+    pub session_file: String,
     pub base_path: String,
     pub config_path: String,
-    pub current_session: usize,
-}
-
-//document this function
-pub async fn setup_sessions(config: &Config, sv: &mut sv_client::Client, sesh_key: &mut usize) {
-    if let Err(err) = sv.load_sessions(&config.sessions_file) {
-        if err.kind() == std::io::ErrorKind::NotFound {
-            sv.new_session()
-                .await
-                .expect("Couldn't create a new session.");
-        } else {
-            panic!("Couldn't load sessions from the config\n{:?}", err);
-        }
-    }
-
-    if sv.sessions.is_empty() {
-        sv.new_session()
-            .await
-            .expect("Couldn't create a new session.");
-    }
-
-    if sv.sessions.len() <= *sesh_key {
-        *sesh_key = sv.sessions.len() - 1;
-    }
-
-    sv.set_current_session(*sesh_key).unwrap();
-
-    match sv.get_session().await {
-        Ok(_) => {}
-        Err(err) => match err {
-            SocialvoidError::RawClient(err) => match err.kind {
-                ErrorKind::Authentication(AuthenticationError::SessionExpired)
-                | ErrorKind::Authentication(AuthenticationError::SessionNotFound) => {
-                    println!("This session either didn't exist or is expired.\nDeleting it and creating a new one.");
-                    sv.delete_session().unwrap();
-                    let new_sesh_key = sv
-                        .new_session()
-                        .await
-                        .expect("Couldn't create a new session.");
-                    sv.set_current_session(new_sesh_key).unwrap();
-                    *sesh_key = new_sesh_key;
-                }
-                _ => {
-                    panic!(
-                        "Couldn't `get` session. The session is probably corrupt.
-Either delete the sessions file or fix the corrupt session."
-                    );
-                }
-            },
-            _ => {
-                panic!(
-                    "Couldn't `get` session. The session is probably corrupt.
-Either delete the sessions file or fix the corrupt session."
-                );
-            }
-        },
-    }
 }
 
 pub fn load_config() -> Config {
@@ -89,17 +29,15 @@ pub fn load_config() -> Config {
             }
         },
         Err(_err) => Config {
-            sessions_file: format!("{}/sessions", base_path),
+            session_file: format!("{}/session", base_path),
             base_path,
             config_path,
-            current_session: 0,
         },
     }
 }
 
-pub fn save_config(sesh_key: usize, config: &Config) -> Result<(), std::io::Error> {
-    let mut config = config.clone();
-    config.current_session = sesh_key;
+pub fn save_config(config: &Config) -> Result<(), std::io::Error> {
+    // let mut config = config.clone();
     std::fs::write(&config.config_path, serde_json::to_string(&config).unwrap())?;
     Ok(())
 }

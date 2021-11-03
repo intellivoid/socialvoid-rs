@@ -9,6 +9,12 @@ impl std::convert::From<SocialvoidError> for MyFriendlyError {
     }
 }
 
+impl std::convert::From<socialvoid_rawclient::Error> for MyFriendlyError {
+    fn from(err: socialvoid_rawclient::Error) -> Self {
+        Self(err.into())
+    }
+}
+
 impl std::fmt::Display for MyFriendlyError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.0 {
