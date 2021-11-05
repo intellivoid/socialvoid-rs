@@ -14,6 +14,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub use error::errors::AuthenticationError;
 pub use error::errors::ClientError;
+pub use error::errors::ValidationError;
 pub use error::Error;
 pub use error::ErrorKind;
 

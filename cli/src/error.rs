@@ -1,5 +1,6 @@
 use socialvoid::{ClientError, SocialvoidError};
 use socialvoid_rawclient::ErrorKind;
+use socialvoid_rawclient::ValidationError;
 
 pub struct MyFriendlyError(SocialvoidError);
 
@@ -39,23 +40,20 @@ socialvoid-cli logout",
                         err
                     )
                 }
+                ErrorKind::Validation(ValidationError::InvalidPeerInput) => {
+                    write!(
+                        f,
+                        "{}\nDid you forget to prefix with `@` incase of a username?",
+                        err.description
+                    )
+                }
                 _ => {
                     write!(f, "{:#?}", self.0)
                 }
             },
             SocialvoidError::Client(err) => match err {
-                ClientError::NoSessionsExist => {
-                    write!(f, "Seems you need to create a session.")
-                }
                 ClientError::SerdeJson(err) => {
                     write!(f, "Error while parsing JSON.\n{:?}", err)
-                }
-                ClientError::SessionIndexOutOfBounds { session_count } => {
-                    write!(
-                        f,
-                        "SessionIndexOutOfBounds. Number of sessions is {}",
-                        session_count
-                    )
                 }
             },
         }
