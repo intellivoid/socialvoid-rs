@@ -194,27 +194,13 @@ async fn main() {
                     }
                 }
             },
-            SocialVoidCommand::GetProfile { field } => {
-                match field {
-                    Some(field) => match field {
-                        ProfileField::Pic => {
-                            let _filepath
-                            = prompt_stdin("Where would you like to save the profile picture(default: TODO: show path of default directory)?");
-                            unimplemented!()
-                        }
-                    },
-                    None => {
-                        // The full profile
-                        match sv.network.get_profile(None).await {
-                            Ok(profile) => println!("{}", profile),
-                            Err(err) => println!(
-                                "An error occurred while trying to get the profile.\n{}",
-                                MyFriendlyError::from(err)
-                            ),
-                        }
-                    }
-                }
-            }
+            SocialVoidCommand::Profile { peer } => match sv.network.get_profile(peer).await {
+                Ok(profile) => println!("{}", profile),
+                Err(err) => println!(
+                    "An error occurred while trying to get the profile.\n{}",
+                    MyFriendlyError::from(err)
+                ),
+            },
             SocialVoidCommand::Follow { peer } => {
                 match sv.network.follow_peer(peer.clone()).await {
                     Ok(relationship) => {
@@ -284,16 +270,15 @@ enum SocialVoidCommand {
         field: ProfileField,
         value: Option<String>,
     },
-    GetProfile {
-        #[structopt(subcommand)]
-        field: Option<ProfileField>,
+    Profile {
+        peer: Option<String>,
     },
     Sync {},
 }
 
 #[derive(Debug, StructOpt)]
 enum ProfileField {
-    Pic,
+    Pic, //TODO: remove this and make a separate command for profile pic
 }
 
 #[derive(Debug, StructOpt)]
