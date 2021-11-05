@@ -88,6 +88,46 @@ impl SVNetworkMethods {
             )
             .await
     }
+
+    /// Get the number of followers of a specific peer or get the number of followers of the authenticated peer if the peer is `None`
+    /// `page` can be none to return the first page of the result.
+    pub async fn get_followers(
+        &self,
+        peer: Option<String>,
+        page: Option<u32>,
+    ) -> Result<Vec<Peer>, Error> {
+        let session_identification = self.session.session_identification()?;
+        self.client
+            .send_request(
+                "network.get_followers",
+                json!({
+                    "session_identification": serde_json::to_value(session_identification)?,
+                    "peer":peer,
+                    "page": page,
+                }),
+            )
+            .await
+    }
+
+    /// Get the number of peers following a specific peer or get the number of peers following the authenticated peer if the peer is `None`
+    /// `page` can be none to return the first page of the result.
+    pub async fn get_following(
+        &self,
+        peer: Option<String>,
+        page: Option<u32>,
+    ) -> Result<Vec<Peer>, Error> {
+        let session_identification = self.session.session_identification()?;
+        self.client
+            .send_request(
+                "network.get_following",
+                json!({
+                    "session_identification": serde_json::to_value(session_identification)?,
+                    "peer":peer,
+                    "page": page,
+                }),
+            )
+            .await
+    }
 }
 
 #[cfg(test)]

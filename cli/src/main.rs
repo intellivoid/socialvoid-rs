@@ -145,6 +145,36 @@ async fn main() {
                 Ok(response) => println!("{:#?}", response),
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
+            SocialVoidCommand::Followers { peer, page } => {
+                match sv.network.get_followers(peer, page).await {
+                    Ok(peers) => {
+                        println!(
+                            "{}",
+                            peers
+                                .iter()
+                                .map(|peer| format!("{:?}", peer))
+                                .collect::<Vec<String>>()
+                                .join("\n")
+                        )
+                    }
+                    Err(err) => println!("{}", MyFriendlyError::from(err)),
+                }
+            }
+            SocialVoidCommand::Following { peer, page } => {
+                match sv.network.get_following(peer, page).await {
+                    Ok(peers) => {
+                        println!(
+                            "{}",
+                            peers
+                                .iter()
+                                .map(|peer| format!("{:?}", peer))
+                                .collect::<Vec<String>>()
+                                .join("\n")
+                        )
+                    }
+                    Err(err) => println!("{}", MyFriendlyError::from(err)),
+                }
+            }
             SocialVoidCommand::SetProfile { field, value } => match field {
                 ProfileField::Pic => {
                     if let Some(filepath) = value {
@@ -185,6 +215,28 @@ async fn main() {
                     }
                 }
             }
+            SocialVoidCommand::Follow { peer } => {
+                match sv.network.follow_peer(peer.clone()).await {
+                    Ok(relationship) => {
+                        println!(
+                            "The relationship type with\n\t`{}`\nis now\n\t{:?}",
+                            peer, relationship
+                        )
+                    }
+                    Err(err) => println!("{}", MyFriendlyError::from(err)),
+                }
+            }
+            SocialVoidCommand::Unfollow { peer } => {
+                match sv.network.unfollow_peer(peer.clone()).await {
+                    Ok(relationship) => {
+                        println!(
+                            "The relationship type with\n\t`{}`\nis now\n\t{:?}",
+                            peer, relationship
+                        )
+                    }
+                    Err(err) => println!("{}", MyFriendlyError::from(err)),
+                }
+            }
             SocialVoidCommand::Sync {} => {}
         }
     }
@@ -213,6 +265,20 @@ enum SocialVoidCommand {
         value: Option<String>,
     },
     GetMe,
+    Followers {
+        peer: Option<String>,
+        page: Option<u32>,
+    },
+    Following {
+        peer: Option<String>,
+        page: Option<u32>,
+    },
+    Follow {
+        peer: String,
+    },
+    Unfollow {
+        peer: String,
+    },
     SetProfile {
         #[structopt(subcommand)]
         field: ProfileField,
