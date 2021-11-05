@@ -1,4 +1,6 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::time::{Duration, UNIX_EPOCH};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SessionIdentification {
@@ -159,7 +161,7 @@ pub struct Post {
     pub repost_count: Option<usize>,
     pub quote_count: Option<usize>,
     pub reply_count: Option<usize>,
-    pub posted_timestamp: u32,
+    pub posted_timestamp: u64,
     pub flags: Vec<String>,
 }
 
@@ -173,6 +175,78 @@ pub enum PostType {
     Reply,
     Quote,
     Repost,
+}
+
+impl std::fmt::Display for Post {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "Post Type: {}
+ID: {}
+Author: {}
+Source: {}
+----
+{}
+----
+{} attachment(s)
+Posted on: {}
+Likes: {}, Reposts: {}, Quotes: {}, Replies: {},
+Flags: ",
+            match self.post_type {
+                PostType::Reply => format!(
+                    "Reply to <{}>",
+                    match &self.reply_to_post {
+                        Some(reply_to_post) => reply_to_post.id.clone(),
+                        None => String::new(),
+                    }
+                ),
+                PostType::Quote => format!(
+                    "Quoted post <{}>",
+                    match &self.quoted_post.as_ref() {
+                        Some(quoted_post) => quoted_post.id.clone(),
+                        None => String::new(),
+                    }
+                ),
+                PostType::Repost => format!(
+                    "Reposted post <{}>",
+                    match &self.reposted_post.as_ref() {
+                        Some(reposted_post) => reposted_post.id.clone(),
+                        None => String::new(),
+                    }
+                ),
+                _ => format!("{:?}", self.post_type),
+            },
+            self.id,
+            self.peer
+                .as_ref()
+                .map(|x| format!("{}", x.username))
+                .unwrap_or("<unavailable>".to_string()),
+            self.source
+                .as_ref()
+                .unwrap_or(&"<not applicable>".to_owned()),
+            self.text.as_ref().unwrap_or(&"<no text>".to_string()),
+            self.attachments.len(), //TODO: maybe show the document IDs
+            {
+                let d = UNIX_EPOCH + Duration::from_secs(self.posted_timestamp);
+                // Create DateTime from SystemTime
+                let datetime = DateTime::<Utc>::from(d);
+                // Formats the combined date and time with the specified format string.
+                datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string()
+            },
+            self.like_count
+                .map(|x| x.to_string())
+                .unwrap_or("<not applicable>".to_string()),
+            self.repost_count
+                .map(|x| x.to_string())
+                .unwrap_or("<not applicable>".to_string()),
+            self.quote_count
+                .map(|x| x.to_string())
+                .unwrap_or("<not applicable>".to_string()),
+            self.reply_count
+                .map(|x| x.to_string())
+                .unwrap_or("<not applicable>".to_string()),
+        )
+    }
 }
 
 impl std::fmt::Display for Profile {
