@@ -223,6 +223,26 @@ async fn main() {
                     Err(err) => println!("{}", MyFriendlyError::from(err)),
                 }
             }
+            SocialVoidCommand::Feed { page } => match sv.timeline.retrieve_feed(page).await {
+                Ok(feed) => {
+                    for post in feed.iter() {
+                        println!("================\n{}", post);
+                    }
+                }
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
+            },
+            SocialVoidCommand::Like { post_id } => match sv.timeline.like(post_id).await {
+                Ok(_) => println!("Done"),
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
+            },
+            SocialVoidCommand::Unlike { post_id } => match sv.timeline.unlike(post_id).await {
+                Ok(_) => println!("Done"),
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
+            },
+            SocialVoidCommand::GetPost { post_id } => match sv.timeline.get_post(post_id).await {
+                Ok(post) => println!("{}", post),
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
+            },
             SocialVoidCommand::Sync {} => {}
         }
     }
@@ -272,6 +292,18 @@ enum SocialVoidCommand {
     },
     Profile {
         peer: Option<String>,
+    },
+    Feed {
+        page: Option<u32>,
+    },
+    GetPost {
+        post_id: String,
+    },
+    Like {
+        post_id: String,
+    },
+    Unlike {
+        post_id: String,
     },
     Sync {},
 }
