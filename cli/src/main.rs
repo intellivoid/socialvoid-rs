@@ -1,8 +1,10 @@
 use socialvoid::session::RegisterRequest;
 use structopt::StructOpt;
 
+mod entities;
 mod error;
 mod utils;
+use crate::entities::*;
 use crate::utils::*;
 use error::MyFriendlyError;
 
@@ -166,7 +168,7 @@ async fn main() {
                 }
             },
             SocialVoidCommand::Profile { peer } => match sv.network.get_profile(peer).await {
-                Ok(profile) => println!("{}", profile),
+                Ok(profile) => println!("{}", SVProfile::from(profile)),
                 Err(err) => println!(
                     "An error occurred while trying to get the profile.\n{}",
                     MyFriendlyError::from(err)
@@ -196,10 +198,19 @@ async fn main() {
             }
             SocialVoidCommand::Feed { page } => match sv.timeline.retrieve_feed(page).await {
                 Ok(feed) => {
-                    for post in feed.iter() {
-                        println!("================\n{}", post);
+                    let mut pager = minus::Pager::new().unwrap();
+
+                    let n_posts = feed.len();
+                    for post in feed.into_iter() {
+                        let post = SVPost::from(post);
+                        pager.push_str(format!("================\n{}", post));
                     }
-                    println!("----Retrieved {} post(s) from the timeline.\n", feed.len());
+                    pager.push_str(format!(
+                        "----Retrieved {} post(s) from the timeline.\n",
+                        n_posts
+                    ));
+                    pager.set_prompt("Feed - Socialvoid");
+                    minus::page_all(pager).expect("Error with pager");
                 }
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
@@ -212,7 +223,7 @@ async fn main() {
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
             SocialVoidCommand::GetPost { post_id } => match sv.timeline.get_post(post_id).await {
-                Ok(post) => println!("{}", post),
+                Ok(post) => println!("{}", SVPost::from(post)),
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
             SocialVoidCommand::DeletePost { post_id } => match sv.timeline.delete(post_id).await {

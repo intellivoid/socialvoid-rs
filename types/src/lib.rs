@@ -1,6 +1,4 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, UNIX_EPOCH};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SessionIdentification {
@@ -29,9 +27,9 @@ pub enum PeerType {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DisplayPictureSize {
-    width: u32,
-    height: u32,
-    document: Document,
+    pub width: u32,
+    pub height: u32,
+    pub document: Document,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -116,15 +114,15 @@ pub struct ServerInformation {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Profile {
-    first_name: String,
-    last_name: Option<String>,
-    name: String,
-    biography: Option<String>,
-    location: Option<String>,
-    url: Option<String>,
-    followers_count: u32,
-    following_count: u32,
-    display_picture_sizes: Vec<DisplayPictureSize>,
+    pub first_name: String,
+    pub last_name: Option<String>,
+    pub name: String,
+    pub biography: Option<String>,
+    pub location: Option<String>,
+    pub url: Option<String>,
+    pub followers_count: u32,
+    pub following_count: u32,
+    pub display_picture_sizes: Vec<DisplayPictureSize>,
 }
 
 /// Relationship of a peer with another peer.
@@ -175,120 +173,4 @@ pub enum PostType {
     Reply,
     Quote,
     Repost,
-}
-
-impl std::fmt::Display for Post {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "Post Type: {}
-ID: {}
-Author: {}
-Source: {}
-----
-{}
-----
-{} attachment(s)
-Posted on: {}
-Likes: {}, Reposts: {}, Quotes: {}, Replies: {},
-Flags: ",
-            match self.post_type {
-                PostType::Reply => format!(
-                    "Reply to <{}>",
-                    match &self.reply_to_post {
-                        Some(reply_to_post) => reply_to_post.id.clone(),
-                        None => String::new(),
-                    }
-                ),
-                PostType::Quote => format!(
-                    "Quoted post <{}>",
-                    match &self.quoted_post.as_ref() {
-                        Some(quoted_post) => quoted_post.id.clone(),
-                        None => String::new(),
-                    }
-                ),
-                PostType::Repost => format!(
-                    "Reposted post <{}>",
-                    match &self.reposted_post.as_ref() {
-                        Some(reposted_post) => reposted_post.id.clone(),
-                        None => String::new(),
-                    }
-                ),
-                _ => format!("{:?}", self.post_type),
-            },
-            self.id,
-            self.peer
-                .as_ref()
-                .map(|x| format!("{}", x.username))
-                .unwrap_or("<unavailable>".to_string()),
-            self.source
-                .as_ref()
-                .unwrap_or(&"<not applicable>".to_owned()),
-            self.text.as_ref().unwrap_or(&"<no text>".to_string()),
-            self.attachments.len(), //TODO: maybe show the document IDs
-            {
-                let d = UNIX_EPOCH + Duration::from_secs(self.posted_timestamp);
-                // Create DateTime from SystemTime
-                let datetime = DateTime::<Utc>::from(d);
-                // Formats the combined date and time with the specified format string.
-                datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string()
-            },
-            self.like_count
-                .map(|x| x.to_string())
-                .unwrap_or("<not applicable>".to_string()),
-            self.repost_count
-                .map(|x| x.to_string())
-                .unwrap_or("<not applicable>".to_string()),
-            self.quote_count
-                .map(|x| x.to_string())
-                .unwrap_or("<not applicable>".to_string()),
-            self.reply_count
-                .map(|x| x.to_string())
-                .unwrap_or("<not applicable>".to_string()),
-        )
-    }
-}
-
-impl std::fmt::Display for Profile {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "First Name: {}
-{}
-Name: {}
-{}
-{}
-{}
-Followers: {}
-Following: {}
-Display Picture: {}",
-            self.first_name,
-            self.last_name
-                .as_ref()
-                .map(|x| format!("Last Name: {}", x))
-                .unwrap_or_else(|| String::from("[No last name set]")),
-            self.name,
-            self.biography
-                .as_ref()
-                .map(|x| format!("Biography: {}", x))
-                .unwrap_or_else(|| String::from("[No biography set]")),
-            self.location
-                .as_ref()
-                .map(|x| format!("Location: {}", x))
-                .unwrap_or_else(|| String::from("[No location set]")),
-            self.url
-                .as_ref()
-                .map(|x| format!("URL: {}", x))
-                .unwrap_or_else(|| String::from("[No URL set]")),
-            self.followers_count,
-            self.following_count,
-            if self.display_picture_sizes.is_empty() {
-                String::from("not set")
-            } else {
-                let count = self.display_picture_sizes.len();
-                let name = &self.display_picture_sizes[0].document.file_name;
-                format!("'{}' ({} sizes available)", name, count)
-            }
-        )
-    }
 }
