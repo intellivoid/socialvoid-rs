@@ -38,6 +38,22 @@ enum_from_primitive! {
 
 enum_from_primitive! {
     #[derive(Debug)]
+    pub enum NetworkError {
+        PeerNotFound = 12544,
+        PostNotFound = 12545,
+        PostDeleted = 12546,
+        AlreadyReposted = 12547,
+        FileUploadError = 12548,
+        DocumentNotFound = 12549,
+        AccessDenied = 12550,
+        BlockedByPeer = 12551,
+        BlockedPeer = 12552,
+        SelfInteractionNotPermitted = 12553,
+    }
+}
+
+enum_from_primitive! {
+    #[derive(Debug)]
     pub enum ServerError {
         InternalServerError = 16384,
         DocumentUpload = 16385

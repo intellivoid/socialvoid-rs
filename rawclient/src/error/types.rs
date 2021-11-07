@@ -1,5 +1,6 @@
 use super::errors::AuthenticationError;
 use super::errors::ClientError;
+use super::errors::NetworkError;
 use super::errors::RpcError;
 use super::errors::ServerError;
 use super::errors::ValidationError;
@@ -19,6 +20,7 @@ pub struct Error {
 pub enum ErrorKind {
     Validation(ValidationError),
     Authentication(AuthenticationError),
+    Network(NetworkError),
     Server(ServerError),
     Rpc(RpcError),
     Cdn(String),
@@ -54,6 +56,11 @@ impl From<ErrorCode> for ErrorKind {
         } else if (8704..=8979).contains(&code) {
             match AuthenticationError::from_i32(code) {
                 Some(kind) => Self::Authentication(kind),
+                None => Self::Unknown,
+            }
+        } else if (12544..=16383).contains(&code) {
+            match NetworkError::from_i32(code) {
+                Some(kind) => Self::Network(kind),
                 None => Self::Unknown,
             }
         } else if (16384..).contains(&code) {
