@@ -228,6 +228,7 @@ async fn main() {
                     for post in feed.iter() {
                         println!("================\n{}", post);
                     }
+                    println!("----Retrieved {} post(s) from the timeline.\n", feed.len());
                 }
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
@@ -241,6 +242,10 @@ async fn main() {
             },
             SocialVoidCommand::GetPost { post_id } => match sv.timeline.get_post(post_id).await {
                 Ok(post) => println!("{}", post),
+                Err(err) => println!("{}", MyFriendlyError::from(err)),
+            },
+            SocialVoidCommand::DeletePost { post_id } => match sv.timeline.delete(post_id).await {
+                Ok(_ok) => println!("Done"),
                 Err(err) => println!("{}", MyFriendlyError::from(err)),
             },
             SocialVoidCommand::Sync {} => {}
@@ -303,6 +308,9 @@ enum SocialVoidCommand {
         post_id: String,
     },
     Unlike {
+        post_id: String,
+    },
+    DeletePost {
         post_id: String,
     },
     Sync {},
