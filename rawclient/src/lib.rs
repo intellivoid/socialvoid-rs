@@ -39,6 +39,12 @@ pub fn new() -> Client {
     }
 }
 
+pub fn with_host(host: &str) -> Client {
+    Client {
+        client: jsonrpc2_client::new(&host),
+    }
+}
+
 impl Client {
     pub async fn send_request<T: serde::de::DeserializeOwned + std::fmt::Debug>(
         &self,
