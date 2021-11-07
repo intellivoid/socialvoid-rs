@@ -1,6 +1,4 @@
-use socialvoid as sv_client;
 use socialvoid::session::RegisterRequest;
-use socialvoid::session::SessionHolder;
 use structopt::StructOpt;
 
 mod error;
@@ -15,34 +13,7 @@ async fn main() {
     let args = Cli::from_args();
     let config = load_config();
 
-    // initialize sv client -
-    // If session_file has a valid session holder, then use that session otherwise try to create a new one.
-    // let sv = match Socialvoid::load_session_or_default(config.session_file).await {
-    // };
-    let sv = match std::fs::read(&config.session_file) {
-        Ok(bytes) => match sv_client::new(SessionHolder::deserialize(bytes)).await {
-            Ok(client) => client,
-            Err(_) => panic!(
-                "The session file may be corrupt. try deleting it to have a new session created."
-            ),
-        },
-        Err(err) => {
-            println!(
-                "There was a problem while reading the session file.\n{}",
-                err
-            );
-            // TODO: give the user the option to either quit or to change the path of the session file
-            // also look into taking the path of the config and session from the command line
-            println!("Creating new session.");
-            match sv_client::new_with_defaults().await {
-                Ok(client) => client,
-                Err(err) => panic!(
-                    "There was an error while trying to establish a new session.\n{}",
-                    MyFriendlyError::from(err)
-                ),
-            }
-        }
-    };
+    let sv = init_client(&config).await;
 
     if let Some(cmd) = args.commands {
         match cmd {

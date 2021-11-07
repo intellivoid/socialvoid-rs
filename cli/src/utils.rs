@@ -2,6 +2,9 @@ use rpassword::read_password;
 use serde::{Deserialize, Serialize};
 use std::io::{stdin, stdout, Write};
 
+use crate::error::MyFriendlyError;
+use socialvoid::session::SessionHolder;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
     pub session_file: String,
@@ -60,4 +63,31 @@ pub fn prompt_password(prompt: &str) -> String {
     print!("{}", prompt);
     std::io::stdout().flush().unwrap();
     read_password().expect("Couldn't read the password")
+}
+
+pub async fn init_client(config: &Config) -> socialvoid::Client {
+    match std::fs::read(&config.session_file) {
+        Ok(bytes) => match socialvoid::new(SessionHolder::deserialize(bytes)).await {
+            Ok(client) => client,
+            Err(_) => panic!(
+                "The session file may be corrupt. try deleting it to have a new session created."
+            ),
+        },
+        Err(err) => {
+            println!(
+                "There was a problem while reading the session file.\n{}",
+                err
+            );
+            // TODO: give the user the option to either quit or to change the path of the session file
+            // also look into taking the path of the config and session from the command line
+            println!("Creating new session.");
+            match socialvoid::new_with_defaults().await {
+                Ok(client) => client,
+                Err(err) => panic!(
+                    "There was an error while trying to establish a new session.\n{}",
+                    MyFriendlyError::from(err)
+                ),
+            }
+        }
+    }
 }

@@ -64,7 +64,7 @@ async fn make_cdn_client_from(
 }
 
 /// Create a client with user defined session
-/// And CDN as gven in the server information
+/// And CDN as given in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
 pub async fn new(session: SessionHolder) -> Result<Client, SocialvoidError> {
     let rpc_client = Arc::new(socialvoid_rawclient::new());
