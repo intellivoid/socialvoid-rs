@@ -37,10 +37,10 @@ impl Client {
     ) -> Result<T, RpcError> {
         let request = RawRequest::new(Some(generate_id()), method.to_string(), Some(params));
 
-        // dbg!(
-        //     "Request: {}",
-        //     serde_json::to_string_pretty(&request).unwrap()
-        // );
+        println!(
+            "Request: {}",
+            serde_json::to_string_pretty(&request).unwrap()
+        );
 
         //TODO: maybe check the response better as well??
         let resp: serde_json::Value = self
@@ -52,7 +52,11 @@ impl Client {
             .json()
             .await?;
 
-        // dbg!("{}", serde_json::to_string_pretty(&resp).unwrap());
+        println!(
+            "Response to `{}`: {}",
+            method,
+            serde_json::to_string_pretty(&resp).unwrap()
+        );
         let resp: RawResponse<T> = serde_json::value::from_value(resp).unwrap();
         resp.result()
     }
@@ -116,7 +120,7 @@ impl std::convert::From<reqwest::Error> for RpcError {
     fn from(error: reqwest::Error) -> Self {
         RpcError {
             code: -1,
-            message: Some(format!("Reqwest error: {}", error)),
+            message: Some(format!("Reqwest error: {:?}", error)),
             data: None,
         }
     }

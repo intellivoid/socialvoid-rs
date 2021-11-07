@@ -15,7 +15,7 @@ async fn main() {
     let args = Cli::from_args();
     let config = load_config();
 
-    let sv = init_client(&config).await;
+    let (sv, mut cached) = init_all(&config).await;
 
     if let Some(cmd) = args.commands {
         match cmd {
@@ -234,8 +234,10 @@ async fn main() {
         }
     }
 
-    // sv.save_session(&config.sessions_file)
-    //     .expect("Couldn't save the session");
+    // todo: maybe save these again ONLY if modified
+    cached
+        .save(&config.cached_stuff_path)
+        .expect("Couldn't save cached stuff");
     std::fs::write(&config.session_file, sv.session.serialize()).unwrap();
     save_config(&config).expect("Couldn't save the config");
 }

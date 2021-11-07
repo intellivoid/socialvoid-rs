@@ -63,12 +63,49 @@ async fn make_cdn_client_from(
     ))
 }
 
-/// Create a client with user defined session
+/// Creates a new client with the given rpc url, default cdn url and no sessions
+pub fn new_with_host(rpc_url: Option<String>) -> Client {
+    let rpc_client = if let Some(rpc_url) = rpc_url {
+        Arc::new(socialvoid_rawclient::with_host(&rpc_url))
+    } else {
+        Arc::new(socialvoid_rawclient::new())
+    };
+    let cdn_client = Arc::new(socialvoid_rawclient::CdnClient::new());
+    let client_info = Arc::new(ClientInfo::generate());
+    let session_holder = Arc::new(Mutex::new(SessionHolder::new(Arc::clone(&client_info))));
+    let (session, network, account, timeline, help) = init_methods(
+        Arc::clone(&rpc_client),
+        Arc::clone(&cdn_client),
+        Arc::clone(&session_holder),
+    );
+    Client {
+        session,
+        cdn_client,
+        help,
+        timeline,
+        network,
+        account,
+    }
+}
+
+/// Create a client with user defined session, (optional)rpc server url and (optional)cdn server url
 /// And CDN as given in the server information
 /// TODO: maybe verify the session and return an error if session is invalid
-pub async fn new(session: SessionHolder) -> Result<Client, SocialvoidError> {
-    let rpc_client = Arc::new(socialvoid_rawclient::new());
-    let cdn_client = Arc::new(make_cdn_client_from(Arc::clone(&rpc_client)).await?);
+pub async fn new(
+    session: SessionHolder,
+    rpc_url: Option<String>,
+    cdn_url: Option<String>,
+) -> Result<Client, SocialvoidError> {
+    let rpc_client = if let Some(rpc_url) = rpc_url {
+        Arc::new(socialvoid_rawclient::with_host(&rpc_url))
+    } else {
+        Arc::new(socialvoid_rawclient::new())
+    };
+    let cdn_client = if let Some(cdn_url) = cdn_url {
+        Arc::new(socialvoid_rawclient::CdnClient::with_cdn_url(cdn_url))
+    } else {
+        Arc::new(make_cdn_client_from(Arc::clone(&rpc_client)).await?)
+    };
     let session_holder = Arc::new(Mutex::new(session));
     let (session, network, account, timeline, help) = init_methods(
         Arc::clone(&rpc_client),
