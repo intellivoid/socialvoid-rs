@@ -1,4 +1,5 @@
 use socialvoid::{ClientError, SocialvoidError};
+use socialvoid_rawclient::AuthenticationError;
 use socialvoid_rawclient::ErrorKind;
 use socialvoid_rawclient::ValidationError;
 
@@ -21,13 +22,16 @@ impl std::fmt::Display for MyFriendlyError {
         match &self.0 {
             SocialvoidError::RawClient(err) => match &err.kind {
                 ErrorKind::Authentication(err) => {
-                    write!(f, "This method needs you to log in.
-Authentication Error: {:#?}\nIf you are already logged in, then try logging out and logging in again.
-To log in:
-socialvoid-cli login
-To log out:
-socialvoid-cli logout", err)
-                }
+                    match err {
+                        AuthenticationError::SessionExpired => write!(f, "The session was expired. Please login again."),
+                        _ => write!(f, "This method needs you to log in.
+    Authentication Error: {:#?}\nIf you are already logged in, then try logging out and logging in again.
+    To log in:
+    socialvoid-cli login
+    To log out:
+    socialvoid-cli logout", err)
+                    }
+                },
                 ErrorKind::Cdn(err) => {
                     write!(
                         f,

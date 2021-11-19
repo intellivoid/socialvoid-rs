@@ -1,4 +1,6 @@
 use socialvoid::session::RegisterRequest;
+use socialvoid_rawclient::AuthenticationError;
+use socialvoid_rawclient::ErrorKind;
 use structopt::StructOpt;
 
 mod entities;
@@ -33,17 +35,48 @@ async fn main() {
                 };
                 let password = prompt_password("Enter password: ");
                 //TODO: add OTP support
-                match sv.session.authenticate_user(username, password, None).await {
-                    Err(err) => {
-                        println!(
+                match sv
+                    .session
+                    .authenticate_user(username.clone(), password.clone(), None)
+                    .await
+                {
+                    Err(err) => match err.kind {
+                        ErrorKind::Authentication(AuthenticationError::SessionExpired) => {
+                            println!("Session expired. Creating new session and retrying.");
+                            match sv.session.create().await {
+                                Ok(_) => {
+                                    match sv
+                                        .session
+                                        .authenticate_user(username, password, None)
+                                        .await
+                                    {
+                                        Err(err) => println!(
+                                            "Couldn't authenticate the user.\n{}",
+                                            MyFriendlyError::from(err)
+                                        ),
+                                        Ok(_) => println!("Done."),
+                                    }
+                                }
+                                Err(err) => {
+                                    println!(
+                                        "Couldn't create the session.\n{}",
+                                        MyFriendlyError::from(err)
+                                    )
+                                }
+                            }
+                        }
+                        _ => println!(
                             "Couldn't authenticate the user.\n{}",
                             MyFriendlyError::from(err)
-                        );
-                    }
+                        ),
+                    },
                     Ok(_) => {
                         println!("Successfully logged in.");
                     }
                 }
+            }
+            SocialVoidCommand::Logout => {
+                let _ = sv.session.logout().await;
             }
             SocialVoidCommand::Register => {
                 if sv.session.authenticated() {
@@ -253,6 +286,7 @@ enum SocialVoidCommand {
     Login {
         username: Option<String>,
     },
+    Logout,
     Register,
     Config {
         #[structopt(subcommand)]
